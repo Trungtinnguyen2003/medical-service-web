@@ -1,0 +1,81 @@
+[
+{
+    "slug": "neurology",
+    "name": "Khoa Thần kinh",
+    "slogan": "Chăm sóc hệ thần kinh toàn diện",
+    "description": "Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.,Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.,Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.,Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.,Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.",
+    "services": [
+      {
+        "name": "Khám thần kinh tổng quát",
+        "description": "Tư vấn và đánh giá tình trạng thần kinh toàn diện."
+      },
+      {
+        "name": "Điện não đồ",
+        "description": "Đo sóng điện não để chẩn đoán động kinh và rối loạn thần kinh."
+      },
+      {
+        "name": "Khám thần kinh tổng quát",
+        "description": "Tư vấn và đánh giá tình trạng thần kinh toàn diện."
+      },
+      {
+        "name": "Điện não đồ",
+        "description": "Đo sóng điện não để chẩn đoán động kinh và rối loạn thần kinh."
+      },{
+        "name": "Khám thần kinh tổng quát",
+        "description": "Tư vấn và đánh giá tình trạng thần kinh toàn diện."
+      },
+      {
+        "name": "Điện não đồ",
+        "description": "Đo sóng điện não để chẩn đoán động kinh và rối loạn thần kinh."
+      },
+      {
+        "name": "Khám thần kinh tổng quát",
+        "description": "Tư vấn và đánh giá tình trạng thần kinh toàn diện."
+      },
+      {
+        "name": "Điện não đồ",
+        "description": "Đo sóng điện não để chẩn đoán động kinh và rối loạn thần kinh."
+      }
+    ]
+  },
+  {
+    "slug": "cardiology",
+    "name": "Khoa Tim Mạch",
+    "slogan": "Chăm sóc hệ thần kinh toàn diện",
+    "description": "Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.,Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.,Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.,Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.,Khoa Thần kinh chuyên điều trị đau đầu, chóng mặt, động kinh, rối loạn giấc ngủ, Parkinson, v.v.",
+    "services": [
+      {
+        "name": "Khám thần kinh tổng quát",
+        "description": "Tư vấn và đánh giá tình trạng thần kinh toàn diện."
+      },
+      {
+        "name": "Điện não đồ",
+        "description": "Đo sóng điện não để chẩn đoán động kinh và rối loạn thần kinh."
+      },
+      {
+        "name": "Khám thần kinh tổng quát",
+        "description": "Tư vấn và đánh giá tình trạng thần kinh toàn diện."
+      },
+      {
+        "name": "Điện não đồ",
+        "description": "Đo sóng điện não để chẩn đoán động kinh và rối loạn thần kinh."
+      },{
+        "name": "Khám thần kinh tổng quát",
+        "description": "Tư vấn và đánh giá tình trạng thần kinh toàn diện."
+      },
+      {
+        "name": "Điện não đồ",
+        "description": "Đo sóng điện não để chẩn đoán động kinh và rối loạn thần kinh."
+      },
+      {
+        "name": "Khám thần kinh tổng quát",
+        "description": "Tư vấn và đánh giá tình trạng thần kinh toàn diện."
+      },
+      {
+        "name": "Điện não đồ",
+        "description": "Đo sóng điện não để chẩn đoán động kinh và rối loạn thần kinh."
+      }
+    ]
+  }
+]
+  
