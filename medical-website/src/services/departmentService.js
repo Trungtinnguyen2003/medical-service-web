@@ -53,6 +53,7 @@ const departmentService = {
     const res = await axios.get(`${API_BASE_URL}/${id}/services`);
     return res.data;
   },
+  
 };
 
 export default departmentService;

@@ -16,6 +16,8 @@ import Bookingpage from "../pages/Bookingpage/Bookingpage";
 import DoctorAppointmentList from "../pages/DoctorAppointmentList/DoctorAppointmentList";
 import CategoryBlog from "../pages/CategoryBlog/CategoryBlog";
 import BlogDetail from "../pages/BlogDetail/BlogDetail";
+import ConsultationPage from "../pages/ConsultationPage/ConsultationPage";
+import ConsultantChatPage from "../pages/Consultant/ConsultantChatPage";
 
 // 👇 danh sách routes
 export const routes = [
@@ -125,4 +127,14 @@ export const routes = [
     page: () => <div>404 - Not Found</div>,
     isShowHeader: false,
   },
+  {
+    path: "/tu-van",
+    page: () => (
+      <RequireAuth>
+        <ConsultationPage />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+  { path: "/consultant/chat", page: ConsultantChatPage },
 ];

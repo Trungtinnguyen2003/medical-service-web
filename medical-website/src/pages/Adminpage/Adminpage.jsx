@@ -9,8 +9,8 @@ import PackageManager from "../../components/Admin/PackageManager";
 import DoctorApprovalManager from "../../components/Admin/DoctorApprovalManager";
 import PostCategoryManager from "../../components/Admin/PostCategoryManager";
 import AdminPostApproval from "../../components/Admin/AdminPostApproval";
-import { useNavigate } from "react-router-dom"; // 👈 thêm dòng này
-
+import AppointmentManager from "../../components/Admin/AppointmentManager"; // ✅ thêm dòng này
+import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
   display: flex;
@@ -19,7 +19,7 @@ const Wrapper = styled.div`
 
 const Sidebar = styled.div`
   width: 220px;
-  background-color:rgb(85, 72, 139);
+  background-color: rgb(85, 72, 139);
   color: white;
   padding: 20px;
 `;
@@ -32,7 +32,7 @@ const MenuItem = styled.div`
 `;
 
 const Content = styled.div`
-   margin-top: 20px; 
+  margin-top: 20px;
   flex: 1;
   padding: 40px;
   background-color: #f8fafc;
@@ -40,7 +40,8 @@ const Content = styled.div`
 
 const AdminPage = () => {
   const [selected, setSelected] = useState("user");
-  const navigate = useNavigate(); // 👈 khởi tạo điều hướng
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
@@ -61,11 +62,13 @@ const AdminPage = () => {
       case "package":
         return <PackageManager />;
       case "doctor-approval":
-        return <DoctorApprovalManager />; // ✅ Thêm dòng này
+        return <DoctorApprovalManager />;
       case "post-category":
-         return <PostCategoryManager />;
+        return <PostCategoryManager />;
       case "post-approval":
         return <AdminPostApproval />;
+      case "appointment":
+        return <AppointmentManager />; // ✅ thêm case hiển thị component quản lý lịch hẹn
       default:
         return null;
     }
@@ -74,32 +77,36 @@ const AdminPage = () => {
   return (
     <Wrapper>
       <Sidebar>
-      <h3 style={{ marginTop: "40px", marginBottom : "20px" }}>Quản trị hệ thống</h3>
-        <MenuItem active={selected === "user"} onClick={() => setSelected("user")}>Người dùng</MenuItem>
-        <MenuItem active={selected === "doctor"} onClick={() => setSelected("doctor")}>Bác sĩ</MenuItem>
-        <MenuItem active={selected === "department"} onClick={() => setSelected("department")}>Chuyên khoa</MenuItem>
-        <MenuItem active={selected === "service"} onClick={() => setSelected("service")}>Dịch vụ</MenuItem>
-        <MenuItem active={selected === "package"} onClick={() => setSelected("package")}>Gói dịch vụ</MenuItem>
+        <h3 style={{ marginTop: "40px", marginBottom: "20px" }}>Quản trị hệ thống</h3>
+        <MenuItem active={selected === "user"} onClick={() => setSelected("user")}>
+          Người dùng
+        </MenuItem>
+        <MenuItem active={selected === "doctor"} onClick={() => setSelected("doctor")}>
+          Bác sĩ
+        </MenuItem>
+        <MenuItem active={selected === "department"} onClick={() => setSelected("department")}>
+          Chuyên khoa
+        </MenuItem>
+        <MenuItem active={selected === "service"} onClick={() => setSelected("service")}>
+          Dịch vụ
+        </MenuItem>
+        {/* <MenuItem active={selected === "package"} onClick={() => setSelected("package")}>
+          Gói dịch vụ
+        </MenuItem> */}
+        <MenuItem active={selected === "appointment"} onClick={() => setSelected("appointment")}>
+          Duyệt lịch hẹn
+        </MenuItem> {/* ✅ Thêm mục menu mới */}
         <MenuItem active={selected === "post-approval"} onClick={() => setSelected("post-approval")}>
-  Duyệt bài viết
-</MenuItem>
-
-        <MenuItem
-  active={selected === "post-category"}
-  onClick={() => setSelected("post-category")}
->
-  Danh mục tin tức
-</MenuItem>
-
-        <MenuItem onClick={() => setSelected("doctor-approval")}>
-  Phê duyệt bác sĩ
-</MenuItem>     
-<MenuItem onClick={handleLogout}>Đăng xuất</MenuItem> {/* ✅ Nút đăng xuất */} 
+          Duyệt bài viết
+        </MenuItem>
+        <MenuItem active={selected === "post-category"} onClick={() => setSelected("post-category")}>
+          Danh mục tin tức
+        </MenuItem>
+        {/* <MenuItem onClick={() => setSelected("doctor-approval")}>Phê duyệt bác sĩ</MenuItem> */}
+        <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
       </Sidebar>
 
-      <Content>
-        {renderContent()}
-      </Content>
+      <Content>{renderContent()}</Content>
     </Wrapper>
   );
 };

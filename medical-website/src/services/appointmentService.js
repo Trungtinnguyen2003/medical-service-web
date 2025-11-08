@@ -48,6 +48,45 @@ const getByDoctor = async () => {
   return response.data;
 };
 
+// ✅ Duyệt lịch hẹn (admin)
+const approve = async (id) => {
+  const token = localStorage.getItem("token");
+  const response = await axios.put(
+    `${API_BASE_URL}/${id}/approve`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+
+// ✅ Từ chối lịch hẹn (admin)
+const reject = async (id, reason) => {
+  const token = localStorage.getItem("token");
+  const response = await axios.put(
+    `${API_BASE_URL}/${id}/reject`,
+    { reason },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+// Thêm hoặc cập nhật lịch hẹn (admin)
+const update = async (id, data) => {
+  const token = localStorage.getItem("token");
+  const response = await axios.put(`${API_BASE_URL}/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+// Admin tạo lịch hẹn thủ công
+const adminCreate = async (data) => {
+  const token = localStorage.getItem("token");
+  const response = await axios.post(API_BASE_URL, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
 const appointmentService = {
   create,
   getAll,
@@ -55,6 +94,10 @@ const appointmentService = {
   updateStatus,
   remove,
   getByDoctor,
+  approve,
+  reject,
+  update,
+  adminCreate,
 };
 
 export default appointmentService;

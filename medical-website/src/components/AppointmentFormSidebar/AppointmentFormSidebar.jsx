@@ -20,7 +20,7 @@ const AppointmentFormSidebar = () => {
     appointment_time: "",
     symptoms: "",
     department_id: "",
-    service_id: "",
+    // service_id: "",
     doctor_id: "",
   });
 
@@ -29,18 +29,20 @@ const AppointmentFormSidebar = () => {
   }, []);
 
   useEffect(() => {
-    if (formData.department_id) {
-      departmentService.getServicesByDepartment(formData.department_id).then((res) => {
-        setServices(res);
-        setFormData(prev => ({
-          ...prev,
-          service_id: "",
-          doctor_id: ""
-        }));
-        setDoctors([]);
+  if (formData.department_id) {
+    doctorService.getByDepartment(formData.department_id)
+      .then((res) => {
+        setDoctors(res);
+        setFormData(prev => ({ ...prev, doctor_id: "" }));
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi lấy bác sĩ:", err.response?.data || err.message);
       });
-    }
-  }, [formData.department_id]);
+  } else {
+    setDoctors([]);
+  }
+}, [formData.department_id]);
+
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -112,14 +114,14 @@ const AppointmentFormSidebar = () => {
         ))}
       </Select>
 
-      <Select name="service_id" onChange={handleChange} value={formData.service_id} disabled={!formData.department_id}>
+      {/* <Select name="service_id" onChange={handleChange} value={formData.service_id} disabled={!formData.department_id}>
         <option value="">Chọn dịch vụ</option>
         {services.map((svc) => (
           <option key={svc.id} value={svc.id}>{svc.title}</option>
         ))}
-      </Select>
+      </Select> */}
 
-      <Select name="doctor_id" onChange={handleChange} value={formData.doctor_id} disabled={!formData.service_id}>
+      <Select name="doctor_id" onChange={handleChange} value={formData.doctor_id} disabled={!formData.department_id}>
         <option value="">Chọn bác sĩ</option>
         {doctors.map((doc) => (
           <option key={doc.id} value={doc.id}>{doc.name}</option>

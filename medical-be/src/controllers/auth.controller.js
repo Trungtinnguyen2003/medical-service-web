@@ -134,6 +134,34 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
+// 👉 Đăng ký tư vấn viên
+const createConsultantAccount = async (req, res) => {
+  try {
+    const { name, email, password, phone } = req.body;
+
+    const existingUser = await db.User.findOne({ where: { email } });
+    if (existingUser)
+      return res
+        .status(400)
+        .json({ message: "Email đã được sử dụng bởi tài khoản khác." });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.User.create({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      role: "consultant",
+      status: "approved", // ✅ Có thể để pending nếu muốn duyệt thủ công
+    });
+
+    res.status(201).json({ message: "Đăng ký tư vấn viên thành công" });
+  } catch (err) {
+    console.error("❌ Lỗi đăng ký tư vấn viên:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -141,4 +169,5 @@ module.exports = {
   updateProfile,
   uploadAvatar,
   registerDoctor,
+  createConsultantAccount,
 };

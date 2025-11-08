@@ -14,6 +14,13 @@ const checkAdmin = (req, res, next) => {
 };
 
 router.get("/", controller.getAllDoctors);
+router.post(
+  "/with-account",
+  verifyToken,
+  checkAdmin,
+  controller.createDoctorWithAccount
+);
+
 router.get("/:id", controller.getDoctorById);
 router.post("/", verifyToken, checkAdmin, controller.createDoctor);
 router.put(
@@ -35,5 +42,19 @@ router.get("/:id/departments", verifyToken, controller.getDepartmentsOfDoctor);
 router.get("/user/:userId", verifyToken, controller.getDoctorByUserId);
 router.get("/departments/:id/doctors", controller.getDoctorsByDepartment);
 router.get("/:id/services", controller.getServicesOfDoctor);
+router.get("/", verifyToken, async (req, res) => {
+  try {
+    const doctors = await db.User.findAll({
+      where: { role: "doctor" },
+      attributes: ["id", "name", "email", "phone", "avatar"],
+      order: [["name", "ASC"]],
+    });
+    res.json(doctors);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Lỗi lấy danh sách bác sĩ", error: err.message });
+  }
+});
 
 module.exports = router;

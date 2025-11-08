@@ -29,10 +29,10 @@ const DoctorDetailPage = () => {
     const fetchData = async () => {
       const doc = await doctorService.getDoctorById(id);
       const dept = await doctorService.getDoctorDepartments(id);
-      const srv = await doctorService.getDoctorServices?.(id);
+      const srv = await doctorService.getDoctorServices(id);
       setDoctor(doc);
       setDepartments(dept);
-      setServices(srv || []);
+      setServices(Array.isArray(srv) ? srv : []);
   
       // 🔄 Lấy dịch vụ từ chuyên khoa
       if (dept.length > 0) {
@@ -95,25 +95,30 @@ const DoctorDetailPage = () => {
 
       <Section>
   <SectionTitle>Dịch vụ bác sĩ đang đảm nhận</SectionTitle>
+
   {departments.map((dept) => {
+    // ⚙️ Lọc dịch vụ mà department.id trùng với dept.id
     const servicesInThisDept = services.filter(
-      (s) => s.departments?.some((d) => d.id === dept.id)
+      (s) => s.department?.id === dept.id || s.assignedDepartment?.id === dept.id
     );
 
     if (servicesInThisDept.length === 0) return null;
 
     return (
       <div key={dept.id} style={{ marginBottom: 24 }}>
-        <h4 style={{ color: "#0a2d55" }}>{dept.name}</h4>
-        <ul style={{ paddingLeft: 20 }}>
+        <h4 style={{ color: "#0a2d55" }}>🏥 {dept.name}</h4>
+        <ul style={{ paddingLeft: 20, marginTop: 8 }}>
           {servicesInThisDept.map((s) => (
-            <li key={s.id}>{s.title}</li>
+            <li key={s.id} style={{ fontSize: 15 }}>
+              {s.title}
+            </li>
           ))}
         </ul>
       </div>
     );
   })}
 </Section>
+
 
 
 

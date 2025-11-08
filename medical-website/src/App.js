@@ -9,13 +9,17 @@ import Footer from "./components/Common/Footer";
 import RequireAuth from "./components/Auth/RequireAuth"; // thêm dòng này
 import RequireAdmin from "./components/Auth/RequireAdmin";
 import RequireDoctor from "./components/Auth/RequireDoctor";
+import ChatWidget from "./components/ChatWidget/ChatWidget";
 
 const AppContent = () => {
   const location = useLocation();
   const hideNavbar = ["/login", "/register"].includes(location.pathname);
-  const hideFooter = ["/login", "/register", "/admin"].includes(
-    location.pathname
-  );
+  const hideFooter = [
+    "/login",
+    "/register",
+    "/admin",
+    "/consultant/chat",
+  ].includes(location.pathname);
 
   return (
     <>
@@ -58,6 +62,7 @@ function App() {
   return (
     <BrowserRouter>
       <AppContent />
+      <ChatWidget />
       <GlobalStyle />
     </BrowserRouter>
   );

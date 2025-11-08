@@ -17,7 +17,7 @@ const Footer = () => {
     <FooterContainer>
       <FooterRow>
         <FooterColumn>
-          <FooterTitle>MedCareee</FooterTitle>
+          <FooterTitle>MedCare</FooterTitle>
           <FooterText>
             Từ những mẹo chăm sóc sức khỏe đến tư vấn chuyên gia, chúng tôi luôn đồng hành cùng hành trình khỏe mạnh của bạn.
           </FooterText>

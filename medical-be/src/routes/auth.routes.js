@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/auth.controller");
-const { verifyToken } = require("../middlewares/verifyToken");
+const { verifyToken, checkAdmin } = require("../middlewares/verifyToken");
 
 const upload = require("../middlewares/upload"); // tách multer ra riêng
 
@@ -23,6 +23,14 @@ router.post(
   "/register-doctor",
   upload.single("avatar"), // ✅ THÊM DÒNG NÀY
   authController.registerDoctor
+);
+
+// Đăng ký tư vấn viên
+router.post(
+  "/admin/create-consultant",
+  verifyToken,
+  checkAdmin,
+  authController.createConsultantAccount
 );
 
 module.exports = router;

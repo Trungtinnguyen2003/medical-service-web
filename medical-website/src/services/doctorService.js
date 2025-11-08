@@ -77,6 +77,11 @@ const getDoctorsByService = async (serviceId) => {
   return res.data;
 };
 
+const getByDepartment = async (departmentId) => {
+  const res = await axios.get(`${API_URL}/departments/${departmentId}/doctors`);
+  return res.data;
+};
+
 export default {
   getAllDoctors,
   getDoctorById,
@@ -88,4 +93,5 @@ export default {
   getDoctorServices,
   setServices,
   getDoctorsByService,
+  getByDepartment,
 };

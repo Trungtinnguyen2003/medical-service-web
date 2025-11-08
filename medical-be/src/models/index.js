@@ -21,7 +21,14 @@ db.DoctorDepartment = require("./doctor_department.model")(
   DataTypes
 );
 db.PostCategory = require("./post_category.model")(sequelize, DataTypes);
+db.ChatSession = require("./chat_session.model")(sequelize, DataTypes);
+db.ChatMessage = require("./chat_message.model")(sequelize, DataTypes);
+
 db.Post = require("./post.model")(sequelize, DataTypes);
+db.Consultation = require("./consultation.model")(
+  sequelize,
+  Sequelize.DataTypes
+);
 
 // ==================== 1-N RELATIONS ====================
 
@@ -93,9 +100,24 @@ db.Department.belongsToMany(db.Doctor, {
 // Doctor - Service
 db.DoctorService = sequelize.define(
   "doctor_service",
-  {},
+  {
+    department_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: db.Department,
+        key: "id",
+      },
+    },
+  },
   { timestamps: false }
 );
+
+db.DoctorService.belongsTo(db.Department, {
+  foreignKey: "departmentId",
+  as: "department",
+});
+
 db.Doctor.belongsToMany(db.Service, {
   through: db.DoctorService,
   as: "services",
@@ -105,6 +127,16 @@ db.Service.belongsToMany(db.Doctor, {
   through: db.DoctorService,
   as: "doctors",
   foreignKey: "serviceId",
+});
+// ✅ Thêm 3 dòng quan trọng dưới đây:
+db.DoctorService.belongsTo(db.Doctor, { foreignKey: "doctorId", as: "doctor" });
+db.DoctorService.belongsTo(db.Service, {
+  foreignKey: "serviceId",
+  as: "service",
+});
+db.DoctorService.belongsTo(db.Department, {
+  foreignKey: "departmentId",
+  as: "assignedDepartment",
 });
 
 // Department - Service
@@ -153,13 +185,13 @@ db.Service.belongsToMany(db.ServicePackage, {
   foreignKey: "serviceId",
 });
 
-module.exports = db;
-
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
+
+module.exports = db;
 
 db.Doctor.belongsTo(db.User, { foreignKey: "user_id" });
 db.User.hasOne(db.Doctor, { foreignKey: "user_id" });

@@ -25,7 +25,7 @@ const HomePage = () => {
       <StatisticBanner />
       {/* <AboutSection /> */}
       <DepartmentsSection />
-      <ServicePackageSlider />
+      {/* <ServicePackageSlider /> */}
       <MissionVisionSection />
       <ServicesSection />
       <div ref={bookingRef}>

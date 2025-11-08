@@ -93,22 +93,55 @@ const AppointmentHistory = () => {
             <Th>Dịch vụ / Gói</Th>
             <Th>Bác sĩ</Th>
             <Th>Trạng thái</Th>
+            <Th>Hành động</Th>
           </tr>
         </thead>
+
+        {/* ✅ Đoạn tbody bạn yêu cầu chèn */}
         <tbody>
           {appointments.length === 0 ? (
             <EmptyRow>
-              <td colSpan="5">Không có lịch hẹn nào.</td>
+              <td colSpan="6">Không có lịch hẹn nào.</td>
             </EmptyRow>
           ) : (
             appointments.map((item) => (
               <tr key={item.id}>
                 <Td>{dayjs(item.appointment_date).format("DD/MM/YYYY")}</Td>
                 <Td>{item.appointment_time || "—"}</Td>
-                <Td>{item.service?.title || item.service_package?.name || "—"}</Td>
+                <Td>
+                  {item.service?.title || item.service_package?.name || "—"}
+                </Td>
                 <Td>{item.doctor?.name || "—"}</Td>
                 <Td>
                   <Status status={item.status}>{item.status}</Status>
+                </Td>
+                <Td>
+                  {(item.status === "done" || item.status === "cancelled" || item.status === "pending") && (
+                    <button
+                      onClick={async () => {
+                        if (window.confirm("Bạn có chắc muốn xoá lịch này?")) {
+                          try {
+                            const token = localStorage.getItem("token");
+                            await axios.delete(
+                              `http://localhost:5000/appointments/${item.id}`,
+                              {
+                                headers: { Authorization: `Bearer ${token}` },
+                              }
+                            );
+                            setAppointments(
+                              appointments.filter((a) => a.id !== item.id)
+                            );
+                          } catch (err) {
+                            console.error("❌ Lỗi xoá lịch:", err);
+                            alert("Không thể xoá lịch hẹn.");
+                          }
+                        }
+                      }}
+                      style={{ color: "red", cursor: "pointer" }}
+                    >
+                      Xoá
+                    </button>
+                  )}
                 </Td>
               </tr>
             ))

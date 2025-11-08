@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     experience_years: {
       type: DataTypes.INTEGER,
+      allowNull: true,
     },
     email: {
       type: DataTypes.STRING,

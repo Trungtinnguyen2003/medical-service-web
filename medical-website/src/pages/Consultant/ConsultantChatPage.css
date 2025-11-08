@@ -1,0 +1,121 @@
+.consultant-container {
+    display: flex;
+    height: 100vh;
+    background: #f6f8fc;
+}
+
+.sidebar {
+    width: 30%;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.session-card {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.session-card button {
+    background: #004aad;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.session-card button:hover {
+    background: #0066ff;
+}
+
+.chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-box {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background: #fafafa;
+
+    /* 👇 đảm bảo mỗi tin nằm dòng riêng */
+    display: flex;
+    flex-direction: column;
+}
+
+.msg {
+    display: inline-block;
+    /* 👈 chỉ chiếm vừa đủ nội dung */
+    width: auto;
+    max-width: 70%;
+    /* 👈 giới hạn nếu text dài */
+    padding: 8px 14px;
+    border-radius: 10px;
+    margin: 6px 10px;
+    word-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.msg.user {
+    background-color: #dbeafe;
+    align-self: flex-start;
+    /* 👈 ép về trái */
+    text-align: left;
+    border-top-left-radius: 0.5rem;
+    margin-right: 800px;
+}
+.msg.consultant {
+    background-color: #e9d5ff;
+    align-self: flex-end;
+    /* 👈 ép sang phải */
+    text-align: right;
+    border-top-right-radius: 0.5rem;
+    margin-right: 16px;
+}
+.msg.system {
+    background-color: #f3f4f6;
+    color: #555;
+    font-style: italic;
+    align-self: center;
+    text-align: center;
+    max-width: 100%;
+}
+
+.chat-input {
+    display: flex;
+    border-top: 1px solid #ddd;
+    background: #fff;
+}
+
+.chat-input input {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    outline: none;
+}
+
+.chat-input button {
+    background: #004aad;
+    color: white;
+    border: none;
+    padding: 0 16px;
+    cursor: pointer;
+}
+
+.chat-input button:hover {
+    background: #0066ff;
+}
+
+.empty-box {
+    margin: auto;
+    color: #777;
+    text-align: center;
+}

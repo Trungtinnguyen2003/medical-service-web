@@ -6,16 +6,46 @@ const create = async (data) => {
 };
 
 const getAll = async () => {
-  return await Appointment.findAll({
-    order: [["createdAt", "DESC"]],
-    include: [
-      { model: db.Doctor, attributes: ["id", "name"] },
-      { model: db.Department, attributes: ["id", "name"] },
-      { model: db.Service, attributes: ["id", "name"] },
-      { model: db.ServicePackage, attributes: ["id", "title"] },
-      { model: db.User, attributes: ["id", "name", "email"] },
-    ],
-  });
+  try {
+    console.log("🔍 appointmentService.getAll() called");
+    const result = await Appointment.findAll({
+      order: [["createdAt", "DESC"]],
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "phone",
+        "gender",
+        "date_of_birth",
+        "address",
+        "appointment_date",
+        "appointment_time",
+        "symptoms",
+        "status",
+        // 👇 Thêm các ID gốc để FE có thể lấy
+        "department_id",
+        "service_id",
+        "doctor_id",
+      ],
+      include: [
+        { model: db.Doctor, as: "appointedDoctor", attributes: ["id", "name"] },
+        { model: db.Department, as: "department", attributes: ["id", "name"] },
+        { model: db.Service, as: "bookedService", attributes: ["id", "title"] },
+        {
+          model: db.ServicePackage,
+          as: "servicePackage",
+          attributes: ["id", "name"],
+        },
+        { model: db.User, as: "patient", attributes: ["id", "name", "email"] },
+      ],
+    });
+
+    console.log("✅ getAll fetched:", result.length, "appointments");
+    return result;
+  } catch (err) {
+    console.error("🔥 Lỗi trong appointmentService.getAll():", err);
+    throw err; // đẩy lỗi ra ngoài để controller bắt được
+  }
 };
 
 const getById = async (id) => {

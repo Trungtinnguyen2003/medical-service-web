@@ -46,9 +46,9 @@ const BookingTabs = () => {
             <TabButton active={activeTab === "service"} onClick={() => setActiveTab("service")}>
               Đặt Dịch Vụ
             </TabButton>
-            <TabButton active={activeTab === "package"} onClick={() => setActiveTab("package")}>
+            {/* <TabButton active={activeTab === "package"} onClick={() => setActiveTab("package")}>
               Đặt Gói Dịch Vụ
-            </TabButton>
+            </TabButton> */}
           </TabGroup>
 
           {/* Nội dung tương ứng */}

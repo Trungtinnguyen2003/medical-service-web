@@ -17,7 +17,9 @@ const ServiceBookingForm = () => {
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", gender: "",
     date_of_birth: "", address: "", appointment_date: "", appointment_time: "",
-    department_id: "", doctor_id: "", service_id: "", symptoms: ""
+    department_id: "", doctor_id: "", 
+    // service_id: "", 
+    symptoms: ""
   });
 
 
@@ -27,14 +29,20 @@ const ServiceBookingForm = () => {
   }, []);
 
   useEffect(() => {
-    if (formData.department_id) {
-      departmentService.getServicesByDepartment(formData.department_id).then((res) => {
-        setServices(res);
-        setFormData(prev => ({ ...prev, service_id: "", doctor_id: "" }));
-        setDoctors([]);
+  if (formData.department_id) {
+    doctorService.getByDepartment(formData.department_id)
+      .then((res) => {
+        setDoctors(res);
+        setFormData(prev => ({ ...prev, doctor_id: "" }));
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi lấy bác sĩ:", err.response?.data || err.message);
       });
-    }
-  }, [formData.department_id]);
+  } else {
+    setDoctors([]);
+  }
+}, [formData.department_id]);
+
 
   useEffect(() => {
     if (formData.service_id) {
@@ -89,18 +97,18 @@ const ServiceBookingForm = () => {
         </InputGroup>
 
         <InputGroup>
-          <Select name="service_id" onChange={handleChange} value={formData.service_id} disabled={!formData.department_id}>
+          {/* <Select name="service_id" onChange={handleChange} value={formData.service_id} disabled={!formData.department_id}>
             <option value="">Chọn dịch vụ</option>
             {services.map((s) => (
               <option key={s.id} value={s.id}>{s.title}</option>
             ))}
-          </Select>
+          </Select> */}
         </InputGroup>
       </InputRow>
 
       <InputRow>
         <InputGroup>
-          <Select name="doctor_id" onChange={handleChange} value={formData.doctor_id} disabled={!formData.service_id}>
+          <Select name="doctor_id" onChange={handleChange} value={formData.doctor_id} disabled={!formData.department_id}>
             <option value="">Chọn bác sĩ</option>
             {doctors.map((doc) => (
               <option key={doc.id} value={doc.id}>{doc.name}</option>

@@ -64,8 +64,15 @@ const Navbar = () => {
           <NavLinkItem><NavLink as={Link} to="/">Home</NavLink></NavLinkItem>
           <NavLinkItem><NavLink as={Link} to="/about">Giới Thiệu</NavLink></NavLinkItem>
           <NavLinkItem><NavLink as={Link} to="/departments">Chuyên Khoa</NavLink></NavLinkItem>
-          <NavLinkItem><NavLink as={Link} to="/services">Dịch Vụ</NavLink></NavLinkItem>
+          {/* <NavLinkItem><NavLink as={Link} to="/services">Dịch Vụ</NavLink></NavLinkItem> */}
+          
+
           <NavLinkItem><NavLink as={Link} to="/doctors">Bác Sĩ</NavLink></NavLinkItem>
+          <NavLinkItem>
+  <NavLink as={Link} to="/tu-van">
+    Hỏi-Đáp
+  </NavLink>
+</NavLinkItem>
           {/* Mục Tin Tức xổ xuống danh mục */}
           <NavLinkItem
             style={{ position: "relative" }}

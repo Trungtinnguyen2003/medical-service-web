@@ -5,6 +5,7 @@ import bgImg from "../../assets/images/6.jpg";
 import decorImg from "../../assets/images/6.jpg";
 import { styles } from "./style";
 import { login, getProfileByToken  } from "../../services/authService";
+import { socket } from "../../socket"; // đường dẫn đúng với project của bạn
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -42,9 +43,16 @@ const LoginPage = () => {
         navigate("/admin");
       } else if (role === "doctor") {
         navigate("/doctor/appointments");
-      } else {
-        navigate("/");
       }
+        else if (role === "consultant") {
+      socket.connect();
+  socket.emit("identify", { user_id: id, role: "consultant" });
+  navigate("/consultant/chat");
+      } else if (role === "user") {
+  socket.connect();
+  socket.emit("identify", { user_id: id, role: "user" });
+  navigate("/");
+}
   
     } catch (err) {
       console.error("Đăng nhập thất bại", err);

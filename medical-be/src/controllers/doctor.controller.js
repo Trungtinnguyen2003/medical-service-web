@@ -1,3 +1,4 @@
+const bcrypt = require("bcryptjs");
 const db = require("../models");
 const Doctor = db.Doctor;
 const Department = db.Department;
@@ -186,53 +187,66 @@ const getDoctorsByDepartment = async (req, res) => {
 // Gán danh sách dịch vụ cho bác sĩ
 const setServices = async (req, res) => {
   try {
-    const doctor = await db.Doctor.findByPk(req.params.id);
-    if (!doctor)
-      return res.status(404).json({ message: "Không tìm thấy bác sĩ" });
+    const doctorId = req.params.id;
+    const { serviceIds, departmentId } = req.body;
 
-    const { serviceIds } = req.body;
-    if (!Array.isArray(serviceIds)) {
+    if (!Array.isArray(serviceIds) || !departmentId) {
       return res
         .status(400)
-        .json({ message: "Danh sách dịch vụ không hợp lệ" });
+        .json({ message: "Thiếu danh sách dịch vụ hoặc khoa" });
     }
 
-    await doctor.setServices(serviceIds);
-    res.json({ message: "Đã cập nhật dịch vụ cho bác sĩ." });
+    // Xoá các gán cũ của khoa này
+    await db.DoctorService.destroy({
+      where: { doctorId, departmentId },
+    });
+
+    // Tạo gán mới
+    const data = serviceIds.map((sid) => ({
+      doctorId,
+      serviceId: sid,
+      departmentId,
+    }));
+
+    await db.DoctorService.bulkCreate(data);
+
+    res.json({ message: "✅ Đã gán dịch vụ cho bác sĩ theo khoa" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Lỗi cập nhật dịch vụ", error: err.message });
+    console.error("Lỗi setServices:", err);
+    res.status(500).json({ message: err.message });
   }
 };
 
 const getServicesOfDoctor = async (req, res) => {
   try {
-    const doctor = await db.Doctor.findByPk(req.params.id, {
+    const doctorId = req.params.id;
+
+    const records = await db.DoctorService.findAll({
+      where: { doctorId },
       include: [
         {
           model: db.Service,
-          as: "services",
-          include: [
-            {
-              model: db.Department,
-              as: "departments", // ✅ cần dòng này
-              through: { attributes: [] },
-            },
-          ],
-          through: { attributes: [] },
+          as: "service",
+          attributes: ["id", "title"],
+        },
+        {
+          model: db.Department,
+          as: "assignedDepartment", // alias chính xác trong model
+          attributes: ["id", "name"],
         },
       ],
     });
 
-    if (!doctor) {
-      return res.status(404).json({ message: "Không tìm thấy bác sĩ" });
-    }
+    const result = records.map((r) => ({
+      id: r.service.id,
+      title: r.service.title,
+      department: r.assignedDepartment,
+    }));
 
-    res.json(doctor.services);
+    res.json(result);
   } catch (err) {
     console.error("Lỗi getServicesOfDoctor:", err);
-    res.status(500).json({ message: "Lỗi máy chủ", error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -268,6 +282,76 @@ const getDoctorsByService = async (req, res) => {
   }
 };
 
+// ✅ Tạo bác sĩ kèm tài khoản
+const createDoctorWithAccount = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      password,
+      confirmPassword,
+      phone,
+      title,
+      degree,
+      position,
+      experience_years,
+      description,
+      work_history,
+      education_history,
+      extra_info,
+      slug,
+    } = req.body;
+
+    // 1️⃣ Kiểm tra xác nhận mật khẩu
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Mật khẩu xác nhận không khớp" });
+    }
+
+    // 2️⃣ Kiểm tra email có tồn tại
+    const existingUser = await db.User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email đã được sử dụng" });
+    }
+
+    // 3️⃣ Mã hoá mật khẩu
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 4️⃣ Tạo user
+    const newUser = await db.User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "doctor",
+      status: "approved",
+    });
+
+    // 5️⃣ Tạo hồ sơ bác sĩ
+    const doctor = await db.Doctor.create({
+      name,
+      slug,
+      phone,
+      title,
+      degree,
+      position,
+      experience_years,
+      description,
+      work_history,
+      education_history,
+      extra_info,
+      user_id: newUser.id,
+    });
+
+    return res.status(201).json({
+      message: "✅ Tạo bác sĩ và tài khoản thành công",
+      doctor,
+      account: { email },
+    });
+  } catch (error) {
+    console.error("🔥 Lỗi khi tạo bác sĩ kèm tài khoản:", error);
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+
 module.exports = {
   getAllDoctors,
   getDoctorById,
@@ -281,4 +365,5 @@ module.exports = {
   setServices,
   getServicesOfDoctor,
   getDoctorsByService,
+  createDoctorWithAccount,
 };

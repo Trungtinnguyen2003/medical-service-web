@@ -66,8 +66,27 @@ const checkDoctorSelfOrAdmin = async (req, res, next) => {
   return res.status(403).json({ message: "Không có quyền truy cập" });
 };
 
+const checkAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res
+      .status(403)
+      .json({ message: "Chỉ admin mới có quyền thực hiện thao tác này" });
+  }
+  next();
+};
+
+const checkConsultant = (req, res, next) => {
+  if (req.user.role !== "consultant") {
+    return res
+      .status(403)
+      .json({ message: "Chỉ tư vấn viên mới có quyền truy cập" });
+  }
+  next();
+};
 module.exports = {
   verifyToken,
   checkDoctor,
   checkDoctorSelfOrAdmin, // ✅ thêm vào xuất khẩu
+  checkAdmin,
+  checkConsultant,
 };

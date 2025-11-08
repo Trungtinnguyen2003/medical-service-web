@@ -148,7 +148,7 @@ const DepartmentManager = () => {
           {[ 
             { field: "name", label: "Tên chuyên khoa" },
             { field: "slug", label: "Slug (không dấu)" },
-            { field: "slogan", label: "Slogan" },
+            { field: "slogan", label: "Giới thiệu tổng quát" },
             { field: "description", label: "Mô tả" },
           ].map(({ field, label }) => (
             <div key={field} style={{ marginBottom: 10 }}>

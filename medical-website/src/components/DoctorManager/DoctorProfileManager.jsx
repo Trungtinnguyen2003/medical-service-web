@@ -7,26 +7,76 @@ const DoctorProfileManager = () => {
   const [editing, setEditing] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [assignedServices, setAssignedServices] = useState([]);
 
-  const fetchDoctorInfo = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-      const profileRes = await axios.get("http://localhost:5000/auth/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+ const fetchDoctorInfo = async () => {
+  try {
+    const token = localStorage.getItem("token");
 
-      const userId = profileRes.data.id;
+    // ✅ 1. Lấy thông tin user đang đăng nhập
+    const profileRes = await axios.get("http://localhost:5000/auth/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const userId = profileRes.data.id;
+    const userName = profileRes.data.name; // 👈 tên từ tài khoản
 
-      const doctorRes = await axios.get(`http://localhost:5000/doctors/user/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    // ✅ 2. Lấy thông tin bác sĩ theo user_id
+    const doctorRes = await axios.get(`http://localhost:5000/doctors/user/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      setDoctor(doctorRes.data);
-    } catch (err) {
-      console.error("Lỗi khi lấy thông tin bác sĩ:", err);
+    // ✅ Nếu bác sĩ chưa có hồ sơ thì tạo object trống,
+    // nhưng vẫn gán sẵn tên từ tài khoản đã đăng ký
+    const doctorData = doctorRes.data
+      ? { ...doctorRes.data, name: doctorRes.data.name || userName }
+      : {
+          id: null,
+          name: userName, // 👈 lấy từ tài khoản
+          title: "",
+          degree: "",
+          position: "",
+          experience_years: "",
+          phone: "",
+          description: "",
+          work_history: "",
+          education_history: "",
+          extra_info: "",
+          avatar: "",
+        };
+
+    setDoctor(doctorData);
+
+    // ✅ 3. Lấy danh sách dịch vụ đã phân công (nếu có)
+    if (doctorRes.data?.id) {
+      const servicesRes = await axios.get(
+        `http://localhost:5000/doctors/${doctorRes.data.id}/services`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAssignedServices(servicesRes.data || []);
+    } else {
+      setAssignedServices([]);
     }
-  };
+  } catch (err) {
+    console.error("🔥 Lỗi khi lấy thông tin bác sĩ:", err);
+    setDoctor({
+      id: null,
+      name: "", // nếu cả profileRes cũng lỗi, để rỗng
+      title: "",
+      degree: "",
+      position: "",
+      experience_years: "",
+      phone: "",
+      description: "",
+      work_history: "",
+      education_history: "",
+      extra_info: "",
+      avatar: "",
+    });
+  }
+};
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,30 +87,46 @@ const DoctorProfileManager = () => {
     try {
       let avatarUrl = doctor.avatar;
 
+      // ✅ Upload ảnh nếu có
       if (avatarFile) {
         const form = new FormData();
         form.append("avatar", avatarFile);
-        const uploadRes = await axios.post("http://localhost:5000/api/upload/image", form, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const uploadRes = await axios.post(
+          "http://localhost:5000/api/upload/image",
+          form,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         avatarUrl = uploadRes.data.url;
       }
 
-      const payload = { ...doctor, avatar: avatarUrl };
+      // ✅ Nếu bác sĩ chưa có hồ sơ (id null), tạo mới
+      if (!doctor.id) {
+        const createRes = await axios.post(
+          "http://localhost:5000/doctors",
+          { ...doctor, avatar: avatarUrl },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setDoctor(createRes.data);
+      } else {
+        // ✅ Nếu có rồi thì cập nhật
+        await axios.put(
+          `http://localhost:5000/doctors/${doctor.id}`,
+          { ...doctor, avatar: avatarUrl },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
 
-      await axios.put(`http://localhost:5000/doctors/${doctor.id}`, payload, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-
-      alert("Cập nhật thông tin thành công!");
+      alert("💾 Cập nhật thông tin thành công!");
       setEditing(false);
       fetchDoctorInfo();
     } catch (err) {
-      console.error("Lỗi cập nhật:", err);
-      alert("Có lỗi khi cập nhật thông tin.");
+      console.error("❌ Lỗi cập nhật:", err);
+      alert("Có lỗi khi lưu thông tin bác sĩ.");
     }
   };
 
@@ -71,18 +137,18 @@ const DoctorProfileManager = () => {
   if (!doctor) return <p>Đang tải thông tin bác sĩ...</p>;
 
   return (
-    <div style={{ marginTop: 50 }}>
-      <h2>Thông tin bác sĩ</h2>
+    <div style={{ marginTop: 40, padding: "0 20px" }}>
+      <h2>👨‍⚕️ Hồ sơ bác sĩ</h2>
 
       {(avatarPreview || doctor.avatar) && (
         <img
           src={avatarPreview || `http://localhost:5000${doctor.avatar}`}
           alt="avatar"
           style={{
-            width: 120,
-            height: 120,
+            width: 140,
+            height: 140,
             objectFit: "cover",
-            borderRadius: 8,
+            borderRadius: "50%",
             marginTop: 16,
           }}
         />
@@ -132,6 +198,23 @@ const DoctorProfileManager = () => {
             )}
           </div>
         ))}
+      </div>
+
+      {/* ✅ Hiển thị danh sách dịch vụ mà admin đã phân công */}
+      <div style={{ marginTop: 30 }}>
+        <h3>🩺 Dịch vụ được phân công</h3>
+        {assignedServices.length > 0 ? (
+         <ul>
+  {assignedServices.map((s) => (
+    <li key={s.id}>
+      <strong>{s.title}</strong> ({s.department?.name || "Chưa rõ khoa"})
+    </li>
+  ))}
+</ul>
+
+        ) : (
+          <p>Chưa có dịch vụ nào được phân công.</p>
+        )}
       </div>
 
       {editing ? (

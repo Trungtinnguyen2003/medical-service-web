@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 const Content = styled.div`
   flex: 1;
-  padding: 40px;
+  padding: 25px;
   background-color: #f8fafc;
 `;
 
@@ -67,11 +67,12 @@ const DoctorManager = () => {
   const updateStatus = async (id, newStatus) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
-        `http://localhost:5000/appointments/${id}/status`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+     await axios.put(
+  `http://localhost:5000/appointments/doctor/${id}/status`,
+  { status: newStatus },
+  { headers: { Authorization: `Bearer ${token}` } }
+);
+
       alert("✅ Cập nhật trạng thái thành công");
       fetchAppointments();
     } catch (err) {
@@ -82,7 +83,7 @@ const DoctorManager = () => {
 
   return (
     <Content>
-      <Title>Lịch hẹn của tôi</Title>
+      <Title style={{ marginTop: "40px"}}>Lịch hẹn của tôi</Title>
       <Table>
         <thead>
           <tr>
@@ -112,17 +113,13 @@ const DoctorManager = () => {
       <Td>{a.appointment_date}</Td>
       <Td>{a.appointment_time}</Td>
       <Td>{a.symptoms || "--"}</Td>
-      <Td>{a.service?.title || "--"}</Td>
+      <Td>{a.bookedService?.title || "--"}</Td>
       <Td>{a.servicePackage?.name || "--"}</Td>
-      <Td>
-        {a.status === "pending" ? (
+       <Td>
+        {a.status === "confirmed" ? (
           <>
-            <button onClick={() => updateStatus(a.id, "done")}>
-              ✅ Đã khám
-            </button>
-            <button onClick={() => updateStatus(a.id, "cancelled")}>
-              ❌ Hủy
-            </button>
+            <button onClick={() => updateStatus(a.id, "done")}>✅ Đã khám</button>
+            <button onClick={() => updateStatus(a.id, "cancelled")}>❌ Hủy</button>
           </>
         ) : (
           <Status status={a.status}>{a.status}</Status>

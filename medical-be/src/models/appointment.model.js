@@ -67,6 +67,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "package_id",
       as: "servicePackage",
     });
+    Appointment.belongsTo(models.Department, {
+      foreignKey: "department_id",
+      as: "linkedDepartment",
+    });
   };
 
   return Appointment;
