@@ -352,6 +352,102 @@ const createDoctorWithAccount = async (req, res) => {
   }
 };
 
+// ✅ Lấy danh sách khung giờ trống của bác sĩ theo ngày
+// ✅ Lấy danh sách khung giờ bác sĩ làm việc theo ngày được chọn
+// ✅ Hiển thị khung giờ bác sĩ còn trống (không cần slot_id)
+const getAvailableSlots = async (req, res) => {
+  try {
+    const doctorId = req.params.id;
+    const date = req.query.date;
+    if (!date) return res.status(400).json({ message: "Thiếu ngày" });
+
+    // ✅ Chuyển ngày thành thứ (1–7)
+    const jsDate = new Date(date);
+    const dayOfWeek = jsDate.getDay() === 0 ? 7 : jsDate.getDay();
+    console.log("🧩 Ngày:", date, "-> getDay:", dayOfWeek);
+
+    // ✅ Lấy tất cả schedule của bác sĩ theo thứ đó
+    const schedules = await db.DoctorSchedule.findAll({
+      where: { doctor_id: doctorId, day_of_week: dayOfWeek },
+      include: [
+        {
+          model: db.TimeSlot,
+          as: "timeSlots", // ⚠️ dùng alias đúng như đã định nghĩa
+          through: db.DoctorScheduleSlot,
+        },
+      ],
+    });
+
+    if (!schedules || schedules.length === 0) return res.json([]);
+
+    // ✅ Lấy tất cả lịch hẹn bác sĩ trong ngày đó (chỉ pending/confirmed)
+    const bookedAppointments = await db.Appointment.findAll({
+      where: {
+        doctor_id: doctorId,
+        appointment_date: date,
+        status: { [db.Sequelize.Op.in]: ["pending", "confirmed"] },
+      },
+      attributes: ["appointment_time"],
+    });
+
+    const bookedTimes = bookedAppointments.map((a) => a.appointment_time);
+
+    // ✅ Tạo danh sách slot, không loại bỏ — chỉ đánh dấu
+    const slots = schedules.flatMap((s) =>
+      s.timeSlots.map((slot) => ({
+        id: slot.id,
+        label: slot.label,
+        period: slot.period,
+        isBooked: bookedTimes.includes(slot.label), // 👈 thêm cờ
+      }))
+    );
+
+    res.json(slots);
+  } catch (err) {
+    console.error("❌ Lỗi getAvailableSlots:", err);
+    res.status(500).json({ message: "Lỗi khi lấy khung giờ" });
+  }
+};
+const getAvailableDays = async (req, res) => {
+  try {
+    const doctorId = req.params.id;
+
+    // Lấy schedule của bác sĩ
+    const schedules = await db.DoctorSchedule.findAll({
+      where: { doctor_id: doctorId },
+      attributes: ["day_of_week"],
+    });
+
+    if (!schedules || schedules.length === 0) {
+      return res.json([]);
+    }
+
+    // Danh sách thứ bác sĩ làm việc
+    const workingDays = schedules.map((s) => s.day_of_week);
+
+    // Tạo danh sách ngày trong 30 ngày tới
+    const today = new Date();
+    const availableDays = [];
+
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() + i);
+
+      // convert JS Sunday = 0 → 7
+      const dow = d.getDay() === 0 ? 7 : d.getDay();
+
+      if (workingDays.includes(dow)) {
+        availableDays.push(d.toISOString().slice(0, 10));
+      }
+    }
+
+    return res.json(availableDays);
+  } catch (error) {
+    console.error("❌ Lỗi getAvailableDays:", error);
+    res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
+  }
+};
+
 module.exports = {
   getAllDoctors,
   getDoctorById,
@@ -366,4 +462,6 @@ module.exports = {
   getServicesOfDoctor,
   getDoctorsByService,
   createDoctorWithAccount,
+  getAvailableSlots,
+  getAvailableDays,
 };

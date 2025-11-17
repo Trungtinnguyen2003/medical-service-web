@@ -3,6 +3,8 @@ import appointmentService from "../../services/appointmentService";
 import departmentService from "../../services/departmentService";
 import doctorService from "../../services/doctorService";
 import serviceService from "../../services/serviceService";
+import PrescriptionDetail from "../../components/PrescriptionDetail/PrescriptionDetail";
+
 
 const initialForm = {
   name: "",
@@ -21,6 +23,7 @@ const initialForm = {
 
 const AppointmentManager = () => {
   const [appointments, setAppointments] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
   const [formData, setFormData] = useState(initialForm);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -67,6 +70,26 @@ const AppointmentManager = () => {
     ...(name === "department_id" ? { service_id: "", doctor_id: "" } : {}),
   }));
 };
+
+useEffect(() => {
+  const fetchSlots = async () => {
+    if (!formData.doctor_id || !formData.appointment_date) {
+      setAvailableSlots([]);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `http://localhost:5000/doctors/${formData.doctor_id}/available-slots?date=${formData.appointment_date}`
+      );
+      const data = await res.json();
+      setAvailableSlots(data);
+    } catch (err) {
+      console.error("❌ Lỗi tải khung giờ:", err);
+      setAvailableSlots([]);
+    }
+  };
+  fetchSlots();
+}, [formData.doctor_id, formData.appointment_date]);
 
 
 useEffect(() => {
@@ -153,6 +176,19 @@ useEffect(() => {
     }
   };
 
+  const handleDelete = async (id) => {
+  if (!window.confirm("Bạn có chắc chắn muốn xoá lịch hẹn này?")) return;
+
+  try {
+    await appointmentService.remove(id);
+    alert("🗑️ Đã xoá lịch hẹn thành công!");
+    loadAppointments(); // 🔄 Cập nhật lại danh sách
+  } catch (err) {
+    alert("❌ Lỗi xoá: " + (err.response?.data?.message || err.message));
+  }
+};
+
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <h2 className="text-2xl font-bold mb-4 text-purple-800"  style={{ marginTop: "20px" }}>📅 Quản lý Lịch Hẹn</h2>
@@ -193,7 +229,7 @@ useEffect(() => {
   ))}
 </select>
 
-<select
+{/* <select
   name="service_id"
   value={formData.service_id}
   onChange={handleChange}
@@ -205,7 +241,7 @@ useEffect(() => {
       {s.title}
     </option>
   ))}
-</select>
+</select> */}
 
 <select
   name="doctor_id"
@@ -222,7 +258,25 @@ useEffect(() => {
 </select>
 
         <input name="appointment_date" type="date" value={formData.appointment_date} onChange={handleChange} className="border p-2 rounded" required />
-        <input name="appointment_time" type="time" value={formData.appointment_time} onChange={handleChange} className="border p-2 rounded" required />
+        <select
+  name="appointment_time"
+  value={formData.appointment_time}
+  onChange={handleChange}
+  className="border p-2 rounded"
+  required
+>
+  <option value="">-- Chọn khung giờ bác sĩ --</option>
+  {availableSlots.map((slot) => (
+    <option
+      key={slot.id}
+      value={slot.label}
+      disabled={slot.isBooked}
+    >
+      {slot.label} {slot.isBooked ? "🔒 (Đã có lịch)" : ""}
+    </option>
+  ))}
+</select>
+
         <textarea
           name="symptoms"
           value={formData.symptoms}
@@ -246,7 +300,7 @@ useEffect(() => {
               <th className="p-2 border">#</th>
               <th className="p-2 border text-left">Bệnh nhân</th>
               <th className="p-2 border">Chuyên khoa</th>
-              <th className="p-2 border">Dịch vụ</th>
+              {/* <th className="p-2 border">Dịch vụ</th> */}
               <th className="p-2 border">Bác sĩ</th>
               <th className="p-2 border">Ngày</th>
               <th className="p-2 border">Giờ</th>
@@ -260,7 +314,7 @@ useEffect(() => {
                 <td className="border text-center">{i + 1}</td>
                 <td className="border p-2">{a.name}</td>
                 <td className="border p-2 text-center">{a.department?.name || "—"}</td>
-                <td className="border p-2 text-center">{a.bookedService?.title || "—"}</td>
+                {/* <td className="border p-2 text-center">{a.bookedService?.title || "—"}</td> */}
                 <td className="border p-2 text-center">{a.appointedDoctor?.name || "—"}</td>
                 <td className="border p-2 text-center">{a.appointment_date}</td>
                 <td className="border p-2 text-center">{a.appointment_time}</td>
@@ -293,6 +347,13 @@ useEffect(() => {
                       </button>
                     </>
                   )}
+                  <button
+  onClick={() => handleDelete(a.id)}
+  className="bg-gray-500 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded mx-1"
+>
+  Xoá
+</button>
+
                 </td>
               </tr>
             ))}

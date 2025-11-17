@@ -57,4 +57,7 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/:id/available-slots", controller.getAvailableSlots);
+router.get("/:id/available-days", controller.getAvailableDays);
+
 module.exports = router;

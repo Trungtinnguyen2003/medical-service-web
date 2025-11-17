@@ -18,6 +18,12 @@ import CategoryBlog from "../pages/CategoryBlog/CategoryBlog";
 import BlogDetail from "../pages/BlogDetail/BlogDetail";
 import ConsultationPage from "../pages/ConsultationPage/ConsultationPage";
 import ConsultantChatPage from "../pages/Consultant/ConsultantChatPage";
+import BookingFlowPage from "../pages/BookingFlow/BookingFlowPage";
+import StepProfile from "../pages/BookingFlow/StepProfile";
+import StepConfirm from "../pages/BookingFlow/StepConfirm";
+import StepSuccess from "../pages/BookingFlow/StepSuccess";
+import StepDoctor from "../pages/BookingFlow/StepDoctor";
+import StepProfileCreate from "../pages/BookingFlow/StepProfileCreate";
 
 // 👇 danh sách routes
 export const routes = [
@@ -134,6 +140,62 @@ export const routes = [
         <ConsultationPage />
       </RequireAuth>
     ),
+    isShowHeader: true,
+  },
+  {
+    path: "/dat-lich/",
+    page: () => (
+      <RequireAuth>
+        <Bookingpage />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+
+  // ==========================
+  // 🚀 BOOKING FLOW LIKE MEDPRO
+  // ==========================
+  {
+    path: "/booking",
+    page: () => (
+      <RequireAuth>
+        <BookingFlowPage />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+
+  {
+    path: "/chon-ho-so",
+    page: () => (
+      <RequireAuth>
+        <StepProfile />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+
+  {
+    path: "/xac-nhan-thong-tin",
+    page: () => (
+      <RequireAuth>
+        <StepConfirm />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+  // {
+  //   path: "/booking",
+  //   page: () => <BookingFlowPage />,
+  // },
+  {
+    path: "/booking/create-profile",
+    page: () => <StepProfileCreate />,
+  },
+
+  {
+    path: "/dat-lich-thanh-cong",
+    page: StepSuccess,
     isShowHeader: true,
   },
   { path: "/consultant/chat", page: ConsultantChatPage },

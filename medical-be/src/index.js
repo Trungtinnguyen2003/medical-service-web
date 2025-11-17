@@ -94,6 +94,8 @@ const postCategoryRoutes = require("./routes/postCategory.routes");
 const postRoutes = require("./routes/post.routes");
 const consultationRoutes = require("./routes/consultation.routes"); // ✨ thêm nếu chưa import
 const chatRoutes = require("./routes/chat.routes"); // ✅ thêm route chat mới
+const medicineRoutes = require("./routes/medicine.routes");
+const prescriptionRoutes = require("./routes/prescription.routes");
 
 // ================= APP INIT =================
 const app = express();
@@ -145,6 +147,12 @@ app.use("/posts", postRoutes);
 app.use("/post-categories", postCategoryRoutes);
 app.use("/api/consultations", consultationRoutes);
 app.use("/api/doctors", require("./routes/doctor.routes"));
+app.use("/api/doctor-schedules", require("./routes/doctor_schedule.routes"));
+app.use("/api/time-slots", require("./routes/time_slot.routes"));
+
+app.use("/api/medicines", medicineRoutes);
+app.use("/api/prescriptions", prescriptionRoutes);
+app.use("/api/patient-profiles", require("./routes/patient_profile.routes"));
 
 const server = http.createServer(app); // ✅ dùng http server
 

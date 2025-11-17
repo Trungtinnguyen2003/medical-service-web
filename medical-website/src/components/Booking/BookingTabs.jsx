@@ -13,6 +13,7 @@ import {
   Icon
 } from "./style";
 import ServiceBookingForm from "./ServiceBookingForm";
+import DepartmentBookingForm from "./DepartmentBookingForm";
 import PackageBookingForm from "./PackageBookingForm";
 import styled from "styled-components";
 import bgImage from "../../assets/images/11.jpg";
@@ -49,10 +50,15 @@ const BookingTabs = () => {
             {/* <TabButton active={activeTab === "package"} onClick={() => setActiveTab("package")}>
               Đặt Gói Dịch Vụ
             </TabButton> */}
+            <TabButton active={activeTab === "department"} onClick={() => setActiveTab("department")}>
+    Đặt Theo Chuyên Khoa
+  </TabButton>
           </TabGroup>
 
-          {/* Nội dung tương ứng */}
-          {activeTab === "service" ? <ServiceBookingForm /> : <PackageBookingForm />}
+            {/* Nội dung tab tương ứng */}
+          {activeTab === "service" && <ServiceBookingForm />}
+          {activeTab === "department" && <DepartmentBookingForm />}
+          {activeTab === "package" && <PackageBookingForm />}
         </FormCard>
       </Background>
     </Section>

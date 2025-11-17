@@ -1,6 +1,9 @@
+// src/components/Doctor/DoctorManager.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
+import ClinicalExamModal from "../Doctor/ClinicalExamModal";
+
 
 const Content = styled.div`
   flex: 1;
@@ -25,6 +28,9 @@ const Th = styled.th`
   padding: 12px;
   text-align: left;
   border-bottom: 2px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 `;
 
 const Td = styled.td`
@@ -42,15 +48,15 @@ const Status = styled.span`
       ? "#10b981"
       : status === "pending"
       ? "#f59e0b"
+      : status === "done"
+      ? "#3b82f6"
       : "#ef4444"};
+  text-transform: capitalize;
 `;
 
 const DoctorManager = () => {
   const [appointments, setAppointments] = useState([]);
-
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   const fetchAppointments = async () => {
     try {
@@ -58,21 +64,24 @@ const DoctorManager = () => {
       const res = await axios.get("http://localhost:5000/appointments/doctor", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setAppointments(res.data);
+      setAppointments(res.data || []);
     } catch (error) {
       console.error("Lỗi khi lấy lịch khám:", error);
     }
   };
 
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
   const updateStatus = async (id, newStatus) => {
     try {
       const token = localStorage.getItem("token");
-     await axios.put(
-  `http://localhost:5000/appointments/doctor/${id}/status`,
-  { status: newStatus },
-  { headers: { Authorization: `Bearer ${token}` } }
-);
-
+      await axios.put(
+        `http://localhost:5000/appointments/doctor/${id}/status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       alert("✅ Cập nhật trạng thái thành công");
       fetchAppointments();
     } catch (err) {
@@ -83,53 +92,101 @@ const DoctorManager = () => {
 
   return (
     <Content>
-      <Title style={{ marginTop: "40px"}}>Lịch hẹn của tôi</Title>
-      <Table>
-        <thead>
-          <tr>
-            <Th>Họ tên</Th>
-            <Th>Email</Th>
-            <Th>Điện thoại</Th>
-            <Th>Giới tính</Th>
-            <Th>Ngày sinh</Th>
-            <Th>Địa chỉ</Th>
-            <Th>Ngày</Th>
-            <Th>Giờ</Th>
-            <Th>Triệu chứng</Th>
-            <Th>Dịch vụ</Th>
-            <Th>Gói</Th>
-            <Th>Trạng thái</Th>
-          </tr>
-        </thead>
-        <tbody>
-  {appointments.map((a) => (
-    <tr key={a.id}>
-      <Td>{a.name || a.user?.name || "--"}</Td>
-      <Td>{a.email || a.user?.email || "--"}</Td>
-      <Td>{a.phone || a.user?.phone || "--"}</Td>
-      <Td>{a.gender || a.user?.gender || "--"}</Td>
-      <Td>{a.date_of_birth || a.user?.date_of_birth || "--"}</Td>
-      <Td>{a.address || a.user?.address || "--"}</Td>
-      <Td>{a.appointment_date}</Td>
-      <Td>{a.appointment_time}</Td>
-      <Td>{a.symptoms || "--"}</Td>
-      <Td>{a.bookedService?.title || "--"}</Td>
-      <Td>{a.servicePackage?.name || "--"}</Td>
-       <Td>
-        {a.status === "confirmed" ? (
-          <>
-            <button onClick={() => updateStatus(a.id, "done")}>✅ Đã khám</button>
-            <button onClick={() => updateStatus(a.id, "cancelled")}>❌ Hủy</button>
-          </>
-        ) : (
-          <Status status={a.status}>{a.status}</Status>
-        )}
-      </Td>
-    </tr>
-  ))}
-</tbody>
+      <Title style={{ marginTop: "40px" }}>Lịch hẹn của tôi</Title>
 
-      </Table>
+      <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 6px 18px rgba(0,0,0,0.06)" }}>
+        <div style={{ maxHeight: "70vh", overflow: "auto" }}>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Họ tên</Th>
+                <Th>Email</Th>
+                <Th>Điện thoại</Th>
+                <Th>Giới tính</Th>
+                <Th>Ngày sinh</Th>
+                <Th>Địa chỉ</Th>
+                <Th>Ngày</Th>
+                <Th>Giờ</Th>
+                <Th>Triệu chứng</Th>
+                <Th>Dịch vụ</Th>
+                <Th>Gói</Th>
+                <Th>Trạng thái / Hành động</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {appointments.map((a, i) => (
+                <tr key={a.id} style={{ background: i % 2 ? "#fafafa" : "#ffffff" }}>
+                  <Td>{a.name || a.user?.name || "--"}</Td>
+                  <Td>{a.email || a.user?.email || "--"}</Td>
+                  <Td>{a.phone || a.user?.phone || "--"}</Td>
+                  <Td>{a.gender || a.user?.gender || "--"}</Td>
+                  <Td>{a.date_of_birth || a.user?.date_of_birth || "--"}</Td>
+                  <Td>{a.address || a.user?.address || "--"}</Td>
+                  <Td>{a.appointment_date}</Td>
+                  <Td>{a.appointment_time}</Td>
+                  <Td>{a.symptoms || "--"}</Td>
+                  <Td>{a.bookedService?.title || "--"}</Td>
+                  <Td>{a.servicePackage?.name || "--"}</Td>
+                  <Td>
+                    {a.status === "confirmed" ? (
+                      <>
+                        <button
+                          onClick={() => setSelectedAppointment(a)}
+                          style={{
+                            marginRight: 6,
+                            background: "#8b5cf6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 8,
+                            padding: "6px 12px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          🩺 Khám
+                        </button>
+                        <button
+                          onClick={() => updateStatus(a.id, "cancelled")}
+                          style={{
+                            background: "#ef4444",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 8,
+                            padding: "6px 12px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          ❌ Hủy
+                        </button>
+                      </>
+                    ) : (
+                      <Status status={a.status}>{a.status}</Status>
+                    )}
+                  </Td>
+                </tr>
+              ))}
+              {appointments.length === 0 && (
+                <tr>
+                  <Td colSpan="12" style={{ textAlign: "center", color: "#6b7280", padding: 24 }}>
+                    Chưa có lịch hẹn
+                  </Td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Modal Khám lâm sàng */}
+      {selectedAppointment && (
+        <ClinicalExamModal
+          appointment={selectedAppointment}
+          onClose={() => setSelectedAppointment(null)}
+          onDone={() => {
+            setSelectedAppointment(null);
+            fetchAppointments();
+          }}
+        />
+      )}
     </Content>
   );
 };

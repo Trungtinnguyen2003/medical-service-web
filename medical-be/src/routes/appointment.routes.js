@@ -47,6 +47,11 @@ router.put(
   checkAdmin,
   appointmentController.updateAppointment
 );
+router.post(
+  "/by-department",
+  verifyToken,
+  appointmentController.createAppointment
+);
 
 // ✅ route cho bác sĩ xem lịch
 

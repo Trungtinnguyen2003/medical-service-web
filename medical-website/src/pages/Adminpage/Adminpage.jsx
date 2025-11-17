@@ -8,9 +8,13 @@ import ServiceManager from "../../components/Admin/ServiceManager";
 import PackageManager from "../../components/Admin/PackageManager";
 import DoctorApprovalManager from "../../components/Admin/DoctorApprovalManager";
 import PostCategoryManager from "../../components/Admin/PostCategoryManager";
+import TimeSlotManager from "../../components/Admin/TimeSlotManager"; // ✅ thêm
 import AdminPostApproval from "../../components/Admin/AdminPostApproval";
 import AppointmentManager from "../../components/Admin/AppointmentManager"; // ✅ thêm dòng này
 import { useNavigate } from "react-router-dom";
+import DoctorScheduleManager from "../../components/Admin/DoctorScheduleManager";
+import MedicineManager from "../../components/Admin/MedicineManager";
+
 
 const Wrapper = styled.div`
   display: flex;
@@ -69,6 +73,12 @@ const AdminPage = () => {
         return <AdminPostApproval />;
       case "appointment":
         return <AppointmentManager />; // ✅ thêm case hiển thị component quản lý lịch hẹn
+         case "time-slot": // ✅ hiển thị khung giờ
+        return <TimeSlotManager />;
+      case "doctor-schedule": // ✅ hiển thị lịch làm việc bác sĩ
+        return <DoctorScheduleManager />;
+      case "medicine":
+        return <MedicineManager />;
       default:
         return null;
     }
@@ -93,9 +103,22 @@ const AdminPage = () => {
         {/* <MenuItem active={selected === "package"} onClick={() => setSelected("package")}>
           Gói dịch vụ
         </MenuItem> */}
+          {/* ✅ thêm 2 menu mới để test */}
+        <hr className="my-3 border-gray-400" />
+        <MenuItem active={selected === "time-slot"} onClick={() => setSelected("time-slot")}>
+          Quản lý Khung giờ
+        </MenuItem>
+        <MenuItem active={selected === "doctor-schedule"} onClick={() => setSelected("doctor-schedule")}>
+          Lịch làm việc bác sĩ
+        </MenuItem>
+        <hr className="my-3 border-gray-400" />
         <MenuItem active={selected === "appointment"} onClick={() => setSelected("appointment")}>
           Duyệt lịch hẹn
         </MenuItem> {/* ✅ Thêm mục menu mới */}
+        <MenuItem active={selected === "medicine"} onClick={() => setSelected("medicine")}>
+  Quản lý Thuốc
+</MenuItem>
+
         <MenuItem active={selected === "post-approval"} onClick={() => setSelected("post-approval")}>
           Duyệt bài viết
         </MenuItem>

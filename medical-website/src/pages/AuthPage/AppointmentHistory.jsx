@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import dayjs from "dayjs";
+import PrescriptionDetail from "../../components/PrescriptionDetail/PrescriptionDetail";
 
 const Wrapper = styled.div`
   padding: 24px;
@@ -32,6 +33,7 @@ const Td = styled.td`
   padding: 14px 16px;
   border-bottom: 1px solid #e5e7eb;
   font-size: 15px;
+  vertical-align: top;
 `;
 
 const Status = styled.span`
@@ -41,11 +43,14 @@ const Status = styled.span`
   font-weight: 500;
   color: white;
   background: ${({ status }) =>
-    status === "confirmed"
+    status === "done"
+      ? "#3b82f6"
+      : status === "confirmed"
       ? "#10b981"
       : status === "cancelled"
       ? "#ef4444"
       : "#f59e0b"};
+  text-transform: capitalize;
 `;
 
 const EmptyRow = styled.tr`
@@ -67,11 +72,8 @@ const AppointmentHistory = () => {
 
       try {
         const res = await axios.get("http://localhost:5000/appointments/my", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
         console.log("📋 Appointments:", res.data);
         setAppointments(res.data);
       } catch (err) {
@@ -82,22 +84,35 @@ const AppointmentHistory = () => {
     fetchAppointments();
   }, []);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc muốn xoá lịch này?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:5000/appointments/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAppointments((prev) => prev.filter((a) => a.id !== id));
+    } catch (err) {
+      console.error("❌ Lỗi xoá lịch:", err);
+      alert("Không thể xoá lịch hẹn.");
+    }
+  };
+
   return (
     <Wrapper>
       <Title>Lịch sử đặt khám</Title>
+
       <Table>
         <thead>
           <tr>
             <Th>Ngày</Th>
-            <Th>Buổi</Th>
+            <Th>Giờ</Th>
             <Th>Dịch vụ / Gói</Th>
             <Th>Bác sĩ</Th>
             <Th>Trạng thái</Th>
             <Th>Hành động</Th>
           </tr>
         </thead>
-
-        {/* ✅ Đoạn tbody bạn yêu cầu chèn */}
         <tbody>
           {appointments.length === 0 ? (
             <EmptyRow>
@@ -105,45 +120,43 @@ const AppointmentHistory = () => {
             </EmptyRow>
           ) : (
             appointments.map((item) => (
-              <tr key={item.id}>
-                <Td>{dayjs(item.appointment_date).format("DD/MM/YYYY")}</Td>
-                <Td>{item.appointment_time || "—"}</Td>
-                <Td>
-                  {item.service?.title || item.service_package?.name || "—"}
-                </Td>
-                <Td>{item.doctor?.name || "—"}</Td>
-                <Td>
-                  <Status status={item.status}>{item.status}</Status>
-                </Td>
-                <Td>
-                  {(item.status === "done" || item.status === "cancelled" || item.status === "pending") && (
-                    <button
-                      onClick={async () => {
-                        if (window.confirm("Bạn có chắc muốn xoá lịch này?")) {
-                          try {
-                            const token = localStorage.getItem("token");
-                            await axios.delete(
-                              `http://localhost:5000/appointments/${item.id}`,
-                              {
-                                headers: { Authorization: `Bearer ${token}` },
-                              }
-                            );
-                            setAppointments(
-                              appointments.filter((a) => a.id !== item.id)
-                            );
-                          } catch (err) {
-                            console.error("❌ Lỗi xoá lịch:", err);
-                            alert("Không thể xoá lịch hẹn.");
-                          }
-                        }
-                      }}
-                      style={{ color: "red", cursor: "pointer" }}
-                    >
-                      Xoá
-                    </button>
-                  )}
-                </Td>
-              </tr>
+              <React.Fragment key={item.id}>
+                <tr>
+                  <Td>{dayjs(item.appointment_date).format("DD/MM/YYYY")}</Td>
+                  <Td>{item.appointment_time || "—"}</Td>
+                  <Td>{item.service?.title || item.service_package?.name || "—"}</Td>
+                  <Td>{item.doctor?.name || "—"}</Td>
+                  <Td>
+                    <Status status={item.status}>{item.status}</Status>
+                  </Td>
+                  <Td>
+                    {(item.status === "done" ||
+                      item.status === "cancelled" ||
+                      item.status === "pending") && (
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        style={{
+                          color: "red",
+                          cursor: "pointer",
+                          border: "none",
+                          background: "transparent",
+                        }}
+                      >
+                        Xoá
+                      </button>
+                    )}
+                  </Td>
+                </tr>
+
+                {/* ✅ Nếu đã khám xong thì hiển thị toa thuốc */}
+                {item.status === "done" && (
+                  <tr>
+                    <Td colSpan="6">
+                      <PrescriptionDetail appointmentId={item.id} />
+                    </Td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))
           )}
         </tbody>

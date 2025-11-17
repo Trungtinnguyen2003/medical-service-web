@@ -23,12 +23,59 @@ db.DoctorDepartment = require("./doctor_department.model")(
 db.PostCategory = require("./post_category.model")(sequelize, DataTypes);
 db.ChatSession = require("./chat_session.model")(sequelize, DataTypes);
 db.ChatMessage = require("./chat_message.model")(sequelize, DataTypes);
+db.Medicine = require("./medicine.model")(sequelize, DataTypes);
+// ==================== THÊM TOA THUỐC ====================
+db.Prescription = require("./prescription.model")(sequelize, DataTypes);
+db.PrescriptionItem = require("./prescription_item.model")(
+  sequelize,
+  DataTypes
+);
+db.PatientProfile = require("./patient_profile.model")(sequelize, DataTypes);
+
+db.User.hasMany(db.PatientProfile, {
+  foreignKey: "user_id",
+  as: "profiles",
+});
+
+db.PatientProfile.belongsTo(db.User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+// Prescription 1 - N PrescriptionItem
+db.Prescription.hasMany(db.PrescriptionItem, {
+  foreignKey: "prescription_id",
+  as: "items",
+  onDelete: "CASCADE",
+});
+db.PrescriptionItem.belongsTo(db.Prescription, {
+  foreignKey: "prescription_id",
+});
+
+// Prescription thuộc về Appointment
+db.Prescription.belongsTo(db.Appointment, {
+  foreignKey: "appointment_id",
+});
+
+// Prescription thuộc về Doctor (user)
+db.Prescription.belongsTo(db.User, {
+  as: "prescribedDoctor",
+  foreignKey: "doctor_id",
+});
+
+// PrescriptionItem thuộc về Medicine
+db.PrescriptionItem.belongsTo(db.Medicine, {
+  foreignKey: "medicine_id",
+});
 
 db.Post = require("./post.model")(sequelize, DataTypes);
 db.Consultation = require("./consultation.model")(
   sequelize,
   Sequelize.DataTypes
 );
+
+db.TimeSlot = require("./time_slot.model")(sequelize, DataTypes);
+db.DoctorSchedule = require("./doctor_schedule.model")(sequelize, DataTypes);
 
 // ==================== 1-N RELATIONS ====================
 
@@ -101,13 +148,18 @@ db.Department.belongsToMany(db.Doctor, {
 db.DoctorService = sequelize.define(
   "doctor_service",
   {
-    department_id: {
+    id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: db.Department,
-        key: "id",
-      },
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    doctorId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    serviceId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
   },
   { timestamps: false }

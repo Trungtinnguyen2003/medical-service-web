@@ -50,8 +50,8 @@ const Bookingpage = () => {
       <BookingBanner />
       <PageWrapper>
         {/* ✅ Box lưu ý */}
-        <NoteBox>
-          <NoteTitle>Lưu ý khi đặt lịch khám</NoteTitle>
+        {/* <NoteBox> */}
+          {/* <NoteTitle>Lưu ý khi đặt lịch khám</NoteTitle>
           <NoteList>
             <li>Vui lòng cung cấp thông tin chính xác để thuận tiện liên hệ xác nhận.</li>
             <li>Chọn đúng chuyên khoa để được hỗ trợ tốt nhất.</li>
@@ -63,8 +63,8 @@ const Bookingpage = () => {
             <li>Đối với gói dịch vụ, cần mang theo giấy tờ tùy thân và bảo hiểm (nếu có).</li>
             <li>Nếu cần thay đổi lịch, hãy gọi tổng đài ít nhất 4 giờ trước giờ khám.</li>
             <li>Tất cả thông tin sẽ được bảo mật tuyệt đối theo chính sách bảo mật.</li>
-          </NoteList>
-        </NoteBox>
+          </NoteList> */}
+        {/* </NoteBox> */}
 
         {/* ✅ Tabs đặt lịch */}
         <div style={{ flex: 2, minWidth: 400 }}>

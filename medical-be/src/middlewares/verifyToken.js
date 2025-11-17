@@ -83,10 +83,22 @@ const checkConsultant = (req, res, next) => {
   }
   next();
 };
+
+// ✅ Middleware kiểm tra quyền động (dùng cho mọi role)
+const checkRole = (roles = []) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Không có quyền truy cập" });
+    }
+    next();
+  };
+};
+
 module.exports = {
   verifyToken,
   checkDoctor,
   checkDoctorSelfOrAdmin, // ✅ thêm vào xuất khẩu
   checkAdmin,
   checkConsultant,
+  checkRole,
 };

@@ -142,88 +142,147 @@ const getAppointmentsByDoctor = async (req, res) => {
 //   }
 // };
 
+// const createAppointment = async (req, res) => {
+//   try {
+//     const {
+//       service_id,
+//       package_id,
+//       doctor_id,
+//       appointment_date,
+//       appointment_time,
+//       ...rest
+//     } = req.body;
+
+//     if (service_id && package_id) {
+//       return res.status(400).json({
+//         message: "Chỉ được chọn 1 trong 2: gói dịch vụ hoặc dịch vụ lẻ",
+//       });
+//     }
+
+//     if (package_id) {
+//       const userId = req.user?.id || null;
+//       const appointment = await db.Appointment.create({
+//         ...rest,
+//         user_id: userId,
+//         package_id,
+//         service_id: null,
+//         doctor_id: null,
+//         appointment_date,
+//         appointment_time,
+//       });
+
+//       return res.status(201).json(appointment);
+//     }
+
+//     // Dịch vụ lẻ: phải có doctor
+//     if (!doctor_id) {
+//       return res
+//         .status(400)
+//         .json({ message: "Cần chọn bác sĩ cho dịch vụ lẻ" });
+//     }
+
+//     const [hour, minute] = appointment_time.split(":").map(Number);
+//     const currentMinutes = hour * 60 + minute;
+//     const minTime = currentMinutes - 10;
+//     const maxTime = currentMinutes + 10;
+
+//     const existingAppointments = await db.Appointment.findAll({
+//       where: {
+//         doctor_id,
+//         appointment_date,
+//         status: {
+//           [Op.notIn]: ["cancelled", "done"],
+//         },
+//       },
+//     });
+
+//     const isOverlapping = existingAppointments.some((appt) => {
+//       const [h, m] = appt.appointment_time.split(":").map(Number);
+//       const apptMin = h * 60 + m;
+//       return apptMin >= minTime && apptMin <= maxTime;
+//     });
+
+//     if (isOverlapping) {
+//       return res.status(400).json({
+//         message:
+//           "Bác sĩ đã có lịch khám trong khoảng thời gian này. Vui lòng chọn khung giờ khác.",
+//       });
+//     }
+
+//     const userId = req.user?.id || null;
+//     const appointment = await db.Appointment.create({
+//       ...rest,
+//       user_id: userId,
+//       package_id: null,
+//       service_id,
+//       doctor_id,
+//       appointment_date,
+//       appointment_time,
+//     });
+
+//     res.status(201).json(appointment);
+//   } catch (err) {
+//     console.error("❌ Lỗi tạo lịch:", err);
+//     res.status(500).json({ message: "Lỗi tạo lịch", error: err.message });
+//   }
+// };
+
 const createAppointment = async (req, res) => {
   try {
-    const {
-      service_id,
-      package_id,
-      doctor_id,
-      appointment_date,
-      appointment_time,
-      ...rest
-    } = req.body;
+    const { service_id, doctor_id, appointment_date, slot_id, ...rest } =
+      req.body;
 
-    if (service_id && package_id) {
-      return res.status(400).json({
-        message: "Chỉ được chọn 1 trong 2: gói dịch vụ hoặc dịch vụ lẻ",
-      });
+    // 🧩 Kiểm tra dữ liệu bắt buộc
+    if (!doctor_id || !appointment_date || !slot_id) {
+      return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
     }
 
-    if (package_id) {
-      const userId = req.user?.id || null;
-      const appointment = await db.Appointment.create({
-        ...rest,
-        user_id: userId,
-        package_id,
-        service_id: null,
-        doctor_id: null,
-        appointment_date,
-        appointment_time,
-      });
-
-      return res.status(201).json(appointment);
+    // 🔍 Lấy thông tin khung giờ từ bảng TimeSlot
+    const slot = await db.TimeSlot.findByPk(slot_id);
+    if (!slot) {
+      return res.status(404).json({ message: "Không tìm thấy khung giờ" });
     }
 
-    // Dịch vụ lẻ: phải có doctor
-    if (!doctor_id) {
-      return res
-        .status(400)
-        .json({ message: "Cần chọn bác sĩ cho dịch vụ lẻ" });
-    }
+    const appointment_time = slot.label; // "07:30 - 08:30"
 
-    const [hour, minute] = appointment_time.split(":").map(Number);
-    const currentMinutes = hour * 60 + minute;
-    const minTime = currentMinutes - 10;
-    const maxTime = currentMinutes + 10;
-
-    const existingAppointments = await db.Appointment.findAll({
+    // ✅ Kiểm tra trùng lịch: cùng bác sĩ, cùng ngày, cùng giờ
+    const existing = await db.Appointment.findOne({
       where: {
         doctor_id,
         appointment_date,
-        status: {
-          [Op.notIn]: ["cancelled", "done"],
-        },
+        appointment_time, // 🔹 so sánh theo giờ thực tế
+        status: { [db.Sequelize.Op.in]: ["pending", "confirmed"] },
       },
     });
 
-    const isOverlapping = existingAppointments.some((appt) => {
-      const [h, m] = appt.appointment_time.split(":").map(Number);
-      const apptMin = h * 60 + m;
-      return apptMin >= minTime && apptMin <= maxTime;
-    });
-
-    if (isOverlapping) {
-      return res.status(400).json({
-        message:
-          "Bác sĩ đã có lịch khám trong khoảng thời gian này. Vui lòng chọn khung giờ khác.",
-      });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ message: "Khung giờ này đã có bệnh nhân khác đặt." });
     }
 
+    // 🧩 Tạo lịch hẹn mới
     const userId = req.user?.id || null;
+
     const appointment = await db.Appointment.create({
       ...rest,
       user_id: userId,
-      package_id: null,
       service_id,
       doctor_id,
       appointment_date,
-      appointment_time,
+      appointment_time, // ✅ Lưu theo giờ text thay vì slot_id
+      status: "pending",
     });
 
-    res.status(201).json(appointment);
+    res.status(201).json({
+      message: "✅ Đặt lịch thành công!",
+      appointment,
+    });
   } catch (err) {
     console.error("❌ Lỗi tạo lịch:", err);
-    res.status(500).json({ message: "Lỗi tạo lịch", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Lỗi khi tạo lịch hẹn", error: err.message });
   }
 };
 
@@ -464,18 +523,30 @@ const doctorUpdateStatus = async (req, res) => {
 const updateAppointment = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = req.body;
+    const data = { ...req.body };
+
     const appointment = await db.Appointment.findByPk(id);
     if (!appointment)
       return res.status(404).json({ message: "Không tìm thấy lịch" });
 
+    // ✅ Loại bỏ service_id & package_id nếu FE gửi lên (không cho sửa)
+    delete data.service_id;
+    delete data.package_id;
+
+    // ✅ Chuẩn hóa các giá trị rỗng thành null
+    for (const key in data) {
+      if (data[key] === "") data[key] = null;
+    }
+
+    // ✅ Cập nhật
     await appointment.update(data);
+
     res.json({ message: "Cập nhật thành công", appointment });
   } catch (err) {
+    console.error("🔥 Lỗi cập nhật lịch:", err);
     res.status(500).json({ message: "Lỗi cập nhật", error: err.message });
   }
 };
-
 
 module.exports = {
   createAppointment,

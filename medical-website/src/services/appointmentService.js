@@ -34,9 +34,17 @@ const updateStatus = async (id, status) => {
 
 // Xoá lịch hẹn
 const remove = async (id) => {
-  const response = await axios.delete(`${API_BASE_URL}/${id}`);
-  return response.data;
+  const token = localStorage.getItem("token");
+  const res = await fetch(`http://localhost:5000/appointments/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error("Lỗi khi xoá lịch hẹn");
+  return res.json();
 };
+
 // Lấy lịch hẹn của bác sĩ đang đăng nhập
 const getByDoctor = async () => {
   const token = localStorage.getItem("token");
