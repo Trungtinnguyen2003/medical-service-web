@@ -24,23 +24,53 @@ import {
 
 import { saveBooking, getBooking } from "./bookingStorage";
 
+// ====================== ANIMATION CSS ======================
+const styles = {
+  fadeIn: {
+    animation: "fadeIn 0.6s ease forwards",
+    opacity: 0,
+  },
+  slideUp: {
+    animation: "slideUp 0.6s ease forwards",
+    opacity: 0,
+    transform: "translateY(20px)",
+  },
+};
+
+// inject keyframes vào DOM
+const injectKeyframes = () => {
+  if (document.getElementById("stepService-animations")) return;
+
+  const style = document.createElement("style");
+  style.id = "stepService-animations";
+  style.innerHTML = `
+      @keyframes fadeIn {
+        from { opacity: 0; } to { opacity: 1; }
+      }
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+  `;
+  document.head.appendChild(style);
+};
+
 const StepService = () => {
   const [params] = useSearchParams();
   const subjectId = params.get("subjectId");
-
-  const [baseService, setBaseService] = useState(null);
   const navigate = useNavigate();
   const booking = getBooking();
 
-  // 🟦 Chỉ lấy dịch vụ khám ban đầu
+  const [baseService, setBaseService] = useState(null);
+
   useEffect(() => {
+    injectKeyframes(); // thêm animation keyframes
+
     serviceService.getAllServices().then((res) => {
       if (!res || res.length === 0) return;
 
-      // ⚡ 1) Ưu tiên lấy flag is_base_service = true
       let base = res.find((s) => s.is_base_service === true);
 
-      // ⚡ 2) Nếu chưa có, fallback theo tên
       if (!base)
         base = res.find(
           (s) =>
@@ -55,71 +85,94 @@ const StepService = () => {
   const handleSelect = () => {
     if (!baseService) return;
 
-    // Lưu vào localStorage
-  saveBooking({
-  ...booking,
-  doctorId: params.get("doctorId"),
-  departmentId: params.get("departmentId"),
-  service: baseService,
- serviceId: baseService.id,
- doctor: booking.doctor,        // thêm
- department: booking.department // thêm
-});
+    saveBooking({
+      ...booking,
+      doctorId: params.get("doctorId"),
+      departmentId: params.get("departmentId"),
+      service: baseService,
+      serviceId: baseService.id,
+      doctor: booking.doctor, // vẫn giữ doctor cũ
+      department: booking.department,
+    });
 
-
-
-
-  navigate(
-  `/booking?stepName=date&doctorId=${params.get("doctorId")}&departmentId=${params.get("departmentId")}&serviceId=${baseService.id}`
-);
-
+    navigate(
+      `/booking?stepName=date&doctorId=${params.get(
+        "doctorId"
+      )}&departmentId=${params.get(
+        "departmentId"
+      )}&serviceId=${baseService.id}`
+    );
   };
 
   return (
-    <PageWrapper>
+    <PageWrapper style={styles.fadeIn}>
       <Layout>
         {/* ================= SIDEBAR ================= */}
-        <Sidebar>
-          <SidebarTitle>Thông tin cơ sở y tế</SidebarTitle>
-          {/* <SidebarItem>
-            <b>Cơ sở:</b> Phòng khám / Bệnh viện của bạn
-          </SidebarItem> */}
+        <Sidebar style={{ marginTop: "60px", ...styles.slideUp }}>
+          <SidebarTitle>Thông tin đã chọn</SidebarTitle>
 
           {booking?.department && (
             <SidebarItem>
               <b>Chuyên khoa:</b> {booking.department.name}
             </SidebarItem>
           )}
+
+          {/* ⭐ HIỂN THỊ TÊN BÁC SĨ ĐÃ CHỌN */}
+          {booking?.doctor && (
+            <SidebarItem>
+              <b>Bác sĩ:</b> {booking.doctor.name}
+            </SidebarItem>
+          )}
+
+          <SidebarItem>
+            <span style={{ fontSize: "13px", opacity: 0.7 }}>
+              Hãy kiểm tra lại thông tin trước khi tiếp tục.
+            </span>
+          </SidebarItem>
         </Sidebar>
 
         {/* ================= MAIN ================= */}
-        <Main>
-          <MainHeader>Vui lòng chọn dịch vụ</MainHeader>
+        <Main style={{ marginTop: "60px" }}>
+          <MainHeader style={styles.slideUp}>Vui lòng chọn dịch vụ</MainHeader>
 
-          <StepTitle>Dịch vụ khám ban đầu</StepTitle>
-          <StepDescription>
+          <StepTitle style={styles.slideUp}>Dịch vụ khám ban đầu</StepTitle>
+          <StepDescription style={styles.slideUp}>
             Đây là dịch vụ khám tổng quát ban đầu. Bác sĩ sẽ kiểm tra, đánh giá
             và chỉ định các cận lâm sàng (siêu âm, xét nghiệm…) nếu cần.
           </StepDescription>
 
-          {/* Nếu chưa load xong */}
-          {!baseService && (
-            <p>Đang tải dịch vụ khám ban đầu...</p>
-          )}
+          {!baseService && <p>Đang tải dịch vụ khám ban đầu...</p>}
 
-          {/* Chỉ hiển thị đúng 1 dịch vụ */}
           {baseService && (
-            <List>
-              <ListItem onClick={handleSelect}>
+            <List style={styles.fadeIn}>
+              <ListItem
+                onClick={handleSelect}
+                style={{
+                  cursor: "pointer",
+                  borderRadius: "12px",
+                  transition: "0.25s",
+                  animation: "fadeIn 0.7s ease",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.transform = "scale(1.02)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.transform = "scale(1)")
+                }
+              >
                 <ItemMain>
-                  <ItemTitle>{baseService.title || baseService.name}</ItemTitle>
+                  <ItemTitle>
+                    {baseService.title || baseService.name}
+                  </ItemTitle>
 
                   {baseService.description && (
                     <ItemSub>{baseService.description}</ItemSub>
                   )}
 
                   {baseService.schedule_note && (
-                    <ItemSub>Lịch khám: {baseService.schedule_note}</ItemSub>
+                    <ItemSub>
+                      <b>Lịch khám:</b> {baseService.schedule_note}
+                    </ItemSub>
                   )}
                 </ItemMain>
 
@@ -133,16 +186,17 @@ const StepService = () => {
           )}
 
           <BottomBar>
-           <button
-  onClick={() =>
-    navigate(
-      `/booking?stepName=department&doctorId=${params.get("doctorId")}`
-    )
-  }
->
-  &laquo; Quay lại
-</button>
-
+            <button
+              onClick={() =>
+                navigate(
+                  `/booking?stepName=department&doctorId=${params.get(
+                    "doctorId"
+                  )}`
+                )
+              }
+            >
+              &laquo; Quay lại
+            </button>
           </BottomBar>
         </Main>
       </Layout>

@@ -8,35 +8,58 @@ const create = async (data) => {
 const getAll = async () => {
   try {
     console.log("🔍 appointmentService.getAll() called");
+
     const result = await Appointment.findAll({
       order: [["createdAt", "DESC"]],
       attributes: [
         "id",
-        "name",
-        "email",
-        "phone",
-        "gender",
-        "date_of_birth",
-        "address",
         "appointment_date",
         "appointment_time",
         "symptoms",
         "status",
-        // 👇 Thêm các ID gốc để FE có thể lấy
         "department_id",
         "service_id",
         "doctor_id",
+        "patient_profile_id",
       ],
       include: [
-        { model: db.Doctor, as: "appointedDoctor", attributes: ["id", "name"] },
-        { model: db.Department, as: "department", attributes: ["id", "name"] },
-        { model: db.Service, as: "bookedService", attributes: ["id", "title"] },
+        {
+          model: db.PatientProfile,
+          as: "patientProfile",
+          attributes: [
+            "id",
+            "full_name",
+            "gender",
+            "date_of_birth",
+            "phone",
+            "address",
+            "job",
+            "ethnicity",
+            "nationality",
+            "id_type",
+            "id_number",
+          ],
+        },
+        {
+          model: db.Doctor,
+          as: "appointedDoctor",
+          attributes: ["id", "name"],
+        },
+        {
+          model: db.Department,
+          as: "department",
+          attributes: ["id", "name"],
+        },
+        {
+          model: db.Service,
+          as: "bookedService",
+          attributes: ["id", "title", "price"],
+        },
         {
           model: db.ServicePackage,
           as: "servicePackage",
           attributes: ["id", "name"],
         },
-        { model: db.User, as: "patient", attributes: ["id", "name", "email"] },
       ],
     });
 
@@ -44,7 +67,7 @@ const getAll = async () => {
     return result;
   } catch (err) {
     console.error("🔥 Lỗi trong appointmentService.getAll():", err);
-    throw err; // đẩy lỗi ra ngoài để controller bắt được
+    throw err;
   }
 };
 

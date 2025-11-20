@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
     image_url: {
       type: DataTypes.STRING,
     },
+    lastDoctorIndex: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   });
 
   return Department;

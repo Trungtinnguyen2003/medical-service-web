@@ -188,3 +188,18 @@ export const Input = styled.input`
     box-shadow: 0 0 0 2px rgb(0 102 255 / 20%);
   }
 `;
+export const Select = styled.select`
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+  outline: none;
+  transition: 0.2s;
+
+  &:focus {
+    border-color: #00a8ff;
+    box-shadow: 0 0 0 3px rgba(0, 168, 255, 0.1);
+  }
+`;

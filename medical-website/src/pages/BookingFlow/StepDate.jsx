@@ -43,7 +43,7 @@ const StepDate = () => {
   return (
     <PageWrapper>
       <Layout>
-        <Sidebar>
+        <Sidebar style={{ marginTop: "60px" }}>
           <SidebarTitle>Thông tin khám</SidebarTitle>
 
           {bk?.doctor && (
@@ -65,7 +65,7 @@ const StepDate = () => {
           )}
         </Sidebar>
 
-        <Main>
+        <Main style={{ marginTop: "60px" }}>
           <MainHeader>Chọn ngày khám</MainHeader>
 
           <StepTitle>Vui lòng chọn ngày bác sĩ còn nhận lịch</StepTitle>

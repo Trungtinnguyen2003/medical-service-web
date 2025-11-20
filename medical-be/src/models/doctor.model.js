@@ -50,7 +50,18 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       unique: true, // mỗi bác sĩ chỉ gắn với 1 user
     },
+    clinic_room_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   });
+
+  Doctor.associate = (models) => {
+    Doctor.belongsTo(models.ClinicRoom, {
+      foreignKey: "clinic_room_id",
+      as: "clinicRoom",
+    });
+  };
 
   return Doctor;
 };

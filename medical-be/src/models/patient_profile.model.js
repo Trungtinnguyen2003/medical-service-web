@@ -1,5 +1,4 @@
 // src/models/patient_profile.model.js
-
 module.exports = (sequelize, DataTypes) => {
   const PatientProfile = sequelize.define(
     "PatientProfile",
@@ -35,12 +34,38 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
-      address: {
+      // 🆕 Nghề nghiệp
+      job: {
         type: DataTypes.STRING,
         allowNull: true,
       },
 
-      email: {
+      // 🆕 Loại giấy tờ (CCCD/CMND/Passport)
+      id_type: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      // 🆕 Mã số định danh
+      id_number: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      // 🆕 Quốc gia
+      nationality: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      // 🆕 Dân tộc
+      ethnicity: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      // 🆕 Địa chỉ
+      address: {
         type: DataTypes.STRING,
         allowNull: true,
       },

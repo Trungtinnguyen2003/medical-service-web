@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import doctorService from "../../services/doctorService";
 import { saveBooking, getBooking } from "./bookingStorage";
 
-
 import {
   PageWrapper,
   Layout,
@@ -16,18 +15,28 @@ import {
   StepTitle,
   StepDescription,
 } from "./style";
+import logo from "../../assets/images/logo.png"; // ⬅️ import logo
+// ===================== Animation Keyframes =====================
+const fadeIn = {
+  animation: "fadeIn 0.6s ease",
+};
+
+const slideUp = {
+  animation: "slideUp 0.6s ease",
+};
 
 const StepDoctor = () => {
   const navigate = useNavigate();
+  const booking = getBooking();
+
   const [doctors, setDoctors] = useState([]);
   const [filtered, setFiltered] = useState([]);
-const booking = getBooking();
   const [search, setSearch] = useState("");
   const [gender, setGender] = useState("");
   const [degree, setDegree] = useState("");
   const [department, setDepartment] = useState("");
 
-  // 🟦 Lấy danh sách bác sĩ
+  // Lấy danh sách bác sĩ
   useEffect(() => {
     doctorService.getAllDoctors().then((res) => {
       setDoctors(res);
@@ -35,7 +44,7 @@ const booking = getBooking();
     });
   }, []);
 
-  // 🟦 Lọc bác sĩ
+  // Bộ lọc bác sĩ
   useEffect(() => {
     let ds = doctors;
 
@@ -45,77 +54,115 @@ const booking = getBooking();
       );
     }
 
-    if (gender) {
-      ds = ds.filter((d) => d.gender === gender);
-    }
-
-    if (degree) {
-      ds = ds.filter((d) => d.title === degree);
-    }
-
-    if (department) {
+    if (gender) ds = ds.filter((d) => d.gender === gender);
+    if (degree) ds = ds.filter((d) => d.title === degree);
+    if (department)
       ds = ds.filter((d) =>
         d.departments?.some((dep) => dep.name === department)
       );
-    }
 
     setFiltered(ds);
   }, [search, gender, degree, department, doctors]);
 
-  // 🟦 Khi chọn 1 bác sĩ
-  const chooseDoctor = (doc) => {
-     saveBooking({
-   doctor: doc,
-   doctorId: doc.id
- });
-    navigate(`/booking?stepName=department&doctorId=${doc.id}`);
+  // Khi chọn bác sĩ
+  // Khi chọn bác sĩ
+const chooseDoctor = async (doc) => {
+  try {
+    const fullDoctor = await doctorService.getDoctorById(doc.id); // 🔥 LẤY BÁC SĨ ĐẦY ĐỦ
 
-  };
+    saveBooking({
+      ...booking,
+      doctor: fullDoctor,
+      doctorId: fullDoctor.id,
+    });
+
+    navigate(`/booking?stepName=department&doctorId=${fullDoctor.id}`);
+  } catch (error) {
+    console.error("Lỗi tải thông tin bác sĩ:", error);
+  }
+};
+
 
   return (
-    <PageWrapper>
+    <PageWrapper style={fadeIn}>
       <Layout>
-        {/* SIDEBAR */}
-        <Sidebar>
-          <SidebarTitle>Thông tin cơ sở y tế</SidebarTitle>
-          <SidebarItem>
-            <b>Cơ sở:</b> Phòng khám / Bệnh viện của bạn
-          </SidebarItem>
-          <SidebarItem>
-            <b>Địa chỉ:</b> CS2, Nguyễn Chí Thanh, Q5, TP.HCM
-          </SidebarItem>
-        </Sidebar>
+          {/* Sidebar */}
+<Sidebar
+  style={{
+    marginTop: "60px",
+    textAlign: "center",
+    position: "sticky",
+    top: "80px",
+    height: "fit-content",
+    zIndex: 10
+  }}
+>
+  {/* LOGO SECTION */}
+  <img
+    src={logo}
+    alt="Medcare Logo"
+    style={{
+      width: 120,
+      height: "auto",
+      objectFit: "contain",
+      borderRadius: 12,
+      margin: "0 auto 18px auto",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+      transition: "0.3s",
+    }}
+    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+  />
 
-        {/* MAIN */}
-        <Main>
-          <MainHeader>Vui lòng chọn Bác sĩ</MainHeader>
+  <SidebarTitle>Thông tin cơ sở y tế</SidebarTitle>
+  <SidebarItem>
+    <b>Cơ sở:</b> Phòng khám / Bệnh viện của bạn
+  </SidebarItem>
+  <SidebarItem>
+    <b>Địa chỉ:</b> Đường 3/2, Thành Phố Cần Thơ
+  </SidebarItem>
+</Sidebar>
+
+
+        {/* Main */}
+        <Main style={{ marginTop: "60px" }}>
+
+          <MainHeader style={slideUp}>Vui lòng chọn Bác sĩ</MainHeader>
           <StepTitle>Chọn bác sĩ muốn khám</StepTitle>
 
-          <StepDescription>
+          <StepDescription style={slideUp}>
             Bạn có thể tìm kiếm theo tên, chuyên khoa hoặc giới tính.
           </StepDescription>
 
-          {/* Search */}
+          {/* Search bar */}
           <input
-            placeholder="Tìm nhanh bác sĩ..."
+            placeholder="🔍 Tìm nhanh bác sĩ..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
               width: "100%",
-              padding: "10px",
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              marginBottom: 14,
+              padding: "12px 16px",
+              borderRadius: 10,
+              border: "1px solid #cfd8dc",
+              marginBottom: 16,
+              fontSize: 15,
+              transition: "0.25s",
             }}
           />
 
           {/* Filters */}
-          <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-            {/* Học vị */}
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              marginBottom: 20,
+              ...fadeIn,
+            }}
+          >
             <select
               value={degree}
               onChange={(e) => setDegree(e.target.value)}
-              style={{ padding: 10, borderRadius: 8 }}
+              style={selectStyle}
             >
               <option value="">Học vị</option>
               <option value="BS CKI">BS CKI</option>
@@ -123,11 +170,10 @@ const booking = getBooking();
               <option value="TS BS">TS BS</option>
             </select>
 
-            {/* Chuyên khoa */}
             <select
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
-              style={{ padding: 10, borderRadius: 8 }}
+              style={selectStyle}
             >
               <option value="">Chuyên khoa</option>
               {doctors
@@ -139,11 +185,10 @@ const booking = getBooking();
                 ))}
             </select>
 
-            {/* Giới tính */}
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value)}
-              style={{ padding: 10, borderRadius: 8 }}
+              style={selectStyle}
             >
               <option value="">Giới tính</option>
               <option value="Nam">Nam</option>
@@ -151,34 +196,53 @@ const booking = getBooking();
             </select>
           </div>
 
-          {/* DANH SÁCH BÁC SĨ */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Doctor List */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 20,
+              marginTop: 10,
+            }}
+          >
             {filtered.map((doc) => (
               <div
                 key={doc.id}
                 onClick={() => chooseDoctor(doc)}
                 style={{
-                  padding: 16,
-                  borderRadius: 12,
-                  border: "1px solid #e2e2e2",
-                  cursor: "pointer",
+                  padding: 18,
+                  borderRadius: 14,
+                  border: "1px solid #e0e0e0",
                   background: "#fff",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                  transition: "0.25s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 16px rgba(0,0,0,0.09)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(0,0,0,0.05)";
                 }}
               >
-                <h3 style={{ margin: 0, color: "#d35400" }}>
+                <h3 style={{ margin: 0, color: "#0077c2", fontWeight: 600 }}>
                   {doc.title} {doc.name}
                 </h3>
 
-                <p style={{ margin: "6px 0" }}>
+                <p style={infoRow}>
                   <b>Giới tính:</b> {doc.gender}
                 </p>
 
-                <p style={{ margin: "6px 0" }}>
+                <p style={infoRow}>
                   <b>Chuyên khoa:</b>{" "}
                   {doc.departments?.map((d) => d.name).join(", ")}
                 </p>
 
-                <p style={{ margin: "6px 0" }}>
+                <p style={infoRow}>
                   <b>Giá khám:</b>{" "}
                   {doc.price
                     ? Number(doc.price).toLocaleString()
@@ -190,8 +254,36 @@ const booking = getBooking();
           </div>
         </Main>
       </Layout>
+
+      {/* ANIMATION KEYFRAMES */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </PageWrapper>
   );
+};
+
+// ===================== Styles =====================
+
+const selectStyle = {
+  padding: "10px 14px",
+  borderRadius: 10,
+  border: "1px solid #cfd8dc",
+  fontSize: 14,
+  width: "100%",
+};
+
+const infoRow = {
+  margin: "6px 0",
+  color: "#444",
 };
 
 export default StepDoctor;

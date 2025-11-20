@@ -24,6 +24,10 @@ import StepConfirm from "../pages/BookingFlow/StepConfirm";
 import StepSuccess from "../pages/BookingFlow/StepSuccess";
 import StepDoctor from "../pages/BookingFlow/StepDoctor";
 import StepProfileCreate from "../pages/BookingFlow/StepProfileCreate";
+import StepProfileEdit from "../pages/BookingFlow/StepProfileEdit";
+import StepPayment from "../pages/BookingFlow/StepPayment";
+import StepPaymentResult from "../pages/BookingFlow/StepPaymentResult";
+import BookingFlowDepartmentPage from "../pages/BookingFlowDepartment/BookingFlowDepartmentPage";
 
 // 👇 danh sách routes
 export const routes = [
@@ -199,4 +203,41 @@ export const routes = [
     isShowHeader: true,
   },
   { path: "/consultant/chat", page: ConsultantChatPage },
+  {
+    path: "/booking/edit-profile/:id",
+    page: () => (
+      <RequireAuth>
+        <StepProfileEdit />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+  {
+    path: "/thanh-toan",
+    page: () => (
+      <RequireAuth>
+        <StepPayment />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+
+  {
+    path: "/ket-qua-thanh-toan",
+    page: () => (
+      <RequireAuth>
+        <StepPaymentResult />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+  {
+    path: "/booking-department",
+    page: () => (
+      <RequireAuth>
+        <BookingFlowDepartmentPage />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
 ];

@@ -1,4 +1,5 @@
 const appointmentService = require("../services/appointment.service");
+const autoAssignService = require("../services/appointmentAutoAssign.service");
 const db = require("../models");
 const Appointment = db.Appointment;
 const { Op } = require("sequelize");
@@ -42,29 +43,38 @@ const getAppointmentsByDoctor = async (req, res) => {
       },
       include: [
         {
-          model: db.User,
-          as: "patient",
+          model: db.PatientProfile,
+          as: "patientProfile",
           attributes: [
             "id",
-            "name",
-            "email",
-            "phone",
+            "full_name",
             "gender",
             "date_of_birth",
+            "phone",
             "address",
+            "job",
+            "ethnicity",
+            "nationality",
+            "id_type",
+            "id_number",
           ],
         },
         {
           model: db.Service,
           as: "bookedService",
-          attributes: ["id", "title", "price"], // ✅ đảm bảo lấy đúng cột 'title'
+          attributes: ["id", "title", "price"],
         },
         {
           model: db.ServicePackage,
           as: "servicePackage",
-          attributes: ["id", "name"], // ✅ nếu không dùng gói thì vẫn có null
+          attributes: ["id", "name"],
+        },
+        {
+          model: db.Department,
+          attributes: ["id", "name"],
         },
       ],
+
       order: [["appointment_date", "ASC"]],
     });
 
@@ -232,25 +242,22 @@ const createAppointment = async (req, res) => {
     const { service_id, doctor_id, appointment_date, slot_id, ...rest } =
       req.body;
 
-    // 🧩 Kiểm tra dữ liệu bắt buộc
     if (!doctor_id || !appointment_date || !slot_id) {
       return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
     }
 
-    // 🔍 Lấy thông tin khung giờ từ bảng TimeSlot
     const slot = await db.TimeSlot.findByPk(slot_id);
     if (!slot) {
       return res.status(404).json({ message: "Không tìm thấy khung giờ" });
     }
 
-    const appointment_time = slot.label; // "07:30 - 08:30"
+    const appointment_time = slot.label;
 
-    // ✅ Kiểm tra trùng lịch: cùng bác sĩ, cùng ngày, cùng giờ
     const existing = await db.Appointment.findOne({
       where: {
         doctor_id,
         appointment_date,
-        appointment_time, // 🔹 so sánh theo giờ thực tế
+        appointment_time,
         status: { [db.Sequelize.Op.in]: ["pending", "confirmed"] },
       },
     });
@@ -261,7 +268,10 @@ const createAppointment = async (req, res) => {
         .json({ message: "Khung giờ này đã có bệnh nhân khác đặt." });
     }
 
-    // 🧩 Tạo lịch hẹn mới
+    // ⭐ LẤY PHÒNG KHÁM CỦA BÁC SĨ
+    const doctor = await db.Doctor.findByPk(doctor_id);
+    const clinic_room_id = doctor?.clinic_room_id || null;
+
     const userId = req.user?.id || null;
 
     const appointment = await db.Appointment.create({
@@ -270,12 +280,13 @@ const createAppointment = async (req, res) => {
       service_id,
       doctor_id,
       appointment_date,
-      appointment_time, // ✅ Lưu theo giờ text thay vì slot_id
+      appointment_time,
+      clinic_room_id, // ⭐ TỰ GÁN PHÒNG KHÁM
       status: "pending",
     });
 
     res.status(201).json({
-      message: "✅ Đặt lịch thành công!",
+      message: "Đặt lịch thành công!",
       appointment,
     });
   } catch (err) {
@@ -286,12 +297,61 @@ const createAppointment = async (req, res) => {
   }
 };
 
+// const getAllAppointments = async (req, res) => {
+//   try {
+//     const appointments = await appointmentService.getAll();
+//     res.json(appointments);
+//   } catch (err) {
+//     res.status(500).json({ message: "Lỗi lấy danh sách", error: err.message });
+//   }
+// };
+
 const getAllAppointments = async (req, res) => {
   try {
-    const appointments = await appointmentService.getAll();
+    const appointments = await db.Appointment.findAll({
+      include: [
+        {
+          model: db.PatientProfile,
+          as: "patientProfile",
+          attributes: [
+            "id",
+            "full_name",
+            "date_of_birth",
+            "gender",
+            "phone",
+            "job",
+            "ethnicity",
+            "nationality",
+            "id_type",
+            "id_number",
+            "address",
+          ],
+        },
+        {
+          model: db.Department,
+          attributes: ["id", "name"],
+        },
+        {
+          model: db.Doctor,
+          as: "appointedDoctor",
+          attributes: ["id", "name"],
+        },
+        {
+          model: db.Service,
+          as: "bookedService",
+          attributes: ["id", "title", "price"],
+        },
+      ],
+      order: [["appointment_date", "DESC"]],
+    });
+
     res.json(appointments);
   } catch (err) {
-    res.status(500).json({ message: "Lỗi lấy danh sách", error: err.message });
+    console.error("🔥 Lỗi lấy danh sách lịch:", err);
+    res.status(500).json({
+      message: "Lỗi lấy danh sách lịch",
+      error: err.message,
+    });
   }
 };
 
@@ -548,6 +608,26 @@ const updateAppointment = async (req, res) => {
   }
 };
 
+const autoAssign = async (req, res) => {
+  try {
+    const user_id = req.user?.id;
+
+    const result = await autoAssignService.assign({
+      ...req.body,
+      user_id,
+    });
+
+    return res.json({
+      message: "Đặt lịch thành công (tự phân công bác sĩ)",
+      doctor_assigned: result.doctor,
+      appointment: result.appointment,
+    });
+  } catch (err) {
+    console.error("❌ Lỗi auto-assign:", err);
+    return res.status(400).json({ message: err.message });
+  }
+};
+
 module.exports = {
   createAppointment,
   getAllAppointments,
@@ -561,4 +641,5 @@ module.exports = {
   rejectAppointment,
   doctorUpdateStatus,
   updateAppointment,
+  autoAssign,
 };

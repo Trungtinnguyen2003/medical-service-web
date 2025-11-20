@@ -96,6 +96,8 @@ const consultationRoutes = require("./routes/consultation.routes"); // ✨ thêm
 const chatRoutes = require("./routes/chat.routes"); // ✅ thêm route chat mới
 const medicineRoutes = require("./routes/medicine.routes");
 const prescriptionRoutes = require("./routes/prescription.routes");
+const clinicRoomRoutes = require("./routes/clinicRoom.routes");
+const paymentRoutes = require("./routes/payment.routes");
 
 // ================= APP INIT =================
 const app = express();
@@ -153,6 +155,8 @@ app.use("/api/time-slots", require("./routes/time_slot.routes"));
 app.use("/api/medicines", medicineRoutes);
 app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/patient-profiles", require("./routes/patient_profile.routes"));
+app.use("/api/clinic-rooms", clinicRoomRoutes);
+app.use("/api/payment", paymentRoutes);
 
 const server = http.createServer(app); // ✅ dùng http server
 

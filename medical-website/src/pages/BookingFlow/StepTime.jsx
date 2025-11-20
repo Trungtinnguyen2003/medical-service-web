@@ -66,7 +66,7 @@ const handleNext = () => {
   return (
     <PageWrapper>
       <Layout>
-        <Sidebar>
+        <Sidebar style={{ marginTop: "60px" }}>
           <SidebarTitle>Thông tin khám</SidebarTitle>
           <SidebarItem>
             <b>Bác sĩ:</b> {booking?.doctor?.name}
@@ -76,7 +76,7 @@ const handleNext = () => {
           </SidebarItem>
         </Sidebar>
 
-        <Main>
+        <Main style={{ marginTop: "60px" }}>
           <MainHeader>Chọn khung giờ khám</MainHeader>
 
           <StepTitle>Các giờ còn nhận khám</StepTitle>

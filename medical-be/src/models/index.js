@@ -21,9 +21,12 @@ db.DoctorDepartment = require("./doctor_department.model")(
   DataTypes
 );
 db.PostCategory = require("./post_category.model")(sequelize, DataTypes);
+db.PaymentTransaction = require("./payment_transaction")(sequelize, DataTypes);
+
 db.ChatSession = require("./chat_session.model")(sequelize, DataTypes);
 db.ChatMessage = require("./chat_message.model")(sequelize, DataTypes);
 db.Medicine = require("./medicine.model")(sequelize, DataTypes);
+
 // ==================== THÊM TOA THUỐC ====================
 db.Prescription = require("./prescription.model")(sequelize, DataTypes);
 db.PrescriptionItem = require("./prescription_item.model")(
@@ -31,6 +34,7 @@ db.PrescriptionItem = require("./prescription_item.model")(
   DataTypes
 );
 db.PatientProfile = require("./patient_profile.model")(sequelize, DataTypes);
+db.ClinicRoom = require("./clinic_room.model")(sequelize, DataTypes);
 
 db.User.hasMany(db.PatientProfile, {
   foreignKey: "user_id",
@@ -242,6 +246,8 @@ Object.keys(db).forEach((modelName) => {
     db[modelName].associate(db);
   }
 });
+
+// Associate PaymentTransaction (quan trọng)
 
 module.exports = db;
 

@@ -112,18 +112,19 @@ const Navbar = () => {
       </NavBox>
 
       <Link
-        to="/dat-lich"
-        style={{
-          background: "purple",
-          color: "#fff",
-          padding: "8px 16px",
-          borderRadius: "20px",
-          fontWeight: "bold",
-          textDecoration: "none",
-        }}
-      >
-        Đặt Lịch Ngay
-      </Link>
+  to="/dat-lich"
+  style={{
+    background: "purple",
+    color: "#fff",
+    padding: "8px 16px",
+    borderRadius: "20px",
+    fontWeight: "bold",
+    textDecoration: "none",
+  }}
+>
+  Đặt Lịch Ngay
+</Link>
+
     </Nav>
   );
 };

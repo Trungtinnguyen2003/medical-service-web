@@ -293,74 +293,143 @@ useEffect(() => {
       </form>
 
       {/* --- DANH SÁCH --- */}
-      <div className="overflow-x-auto shadow-md bg-white rounded-xl">
-        <table className="min-w-full text-sm">
-          <thead className="bg-purple-100">
-            <tr>
-              <th className="p-2 border">#</th>
-              <th className="p-2 border text-left">Bệnh nhân</th>
-              <th className="p-2 border">Chuyên khoa</th>
-              {/* <th className="p-2 border">Dịch vụ</th> */}
-              <th className="p-2 border">Bác sĩ</th>
-              <th className="p-2 border">Ngày</th>
-              <th className="p-2 border">Giờ</th>
-              <th className="p-2 border">Trạng thái</th>
-              <th className="p-2 border">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {appointments.map((a, i) => (
-              <tr key={a.id} className="hover:bg-gray-50">
-                <td className="border text-center">{i + 1}</td>
-                <td className="border p-2">{a.name}</td>
-                <td className="border p-2 text-center">{a.department?.name || "—"}</td>
-                {/* <td className="border p-2 text-center">{a.bookedService?.title || "—"}</td> */}
-                <td className="border p-2 text-center">{a.appointedDoctor?.name || "—"}</td>
-                <td className="border p-2 text-center">{a.appointment_date}</td>
-                <td className="border p-2 text-center">{a.appointment_time}</td>
-                <td className="border p-2 text-center">
-                  {a.status === "pending" && <span className="text-yellow-600">Chờ duyệt</span>}
-                  {a.status === "confirmed" && <span className="text-green-600">Đã duyệt</span>}
-                  {a.status === "cancelled" && <span className="text-red-600">Từ chối</span>}
-                  {a.status === "done" && <span className="text-gray-600">Hoàn tất</span>}
-                </td>
-                <td className="border p-2 text-center">
-                  <button
-                    onClick={() => handleEdit(a)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded mx-1"
-                  >
-                    Sửa
-                  </button>
-                  {a.status === "pending" && (
-                    <>
-                      <button
-                        onClick={() => handleApprove(a.id)}
-                        className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded mx-1"
-                      >
-                        Duyệt
-                      </button>
-                      <button
-                        onClick={() => handleReject(a.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded mx-1"
-                      >
-                        Từ chối
-                      </button>
-                    </>
-                  )}
-                  <button
-  onClick={() => handleDelete(a.id)}
-  className="bg-gray-500 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded mx-1"
->
-  Xoá
-</button>
+    <div className="overflow-x-auto bg-white rounded-xl shadow">
+  <table className="min-w-full text-sm">
+    <thead className="bg-purple-100 text-gray-700">
+      <tr>
+        <th className="p-3 border text-center">#</th>
+        <th className="p-3 border text-left">Bệnh nhân</th>
+        <th className="p-3 border text-center">Chuyên khoa</th>
+        <th className="p-3 border text-center">Bác sĩ</th>
+        <th className="p-3 border text-center">Ngày</th>
+        <th className="p-3 border text-center">Giờ</th>
+        <th className="p-3 border text-center">Trạng thái</th>
+        <th className="p-3 border text-center">Thao tác</th>
+      </tr>
+    </thead>
 
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <tbody>
+      {appointments.map((a, i) => {
+        const p = a.patientProfile;
+
+        return (
+          <tr key={a.id} className="hover:bg-gray-50 transition">
+            <td className="border text-center">{i + 1}</td>
+
+            {/* CỘT BỆNH NHÂN */}
+            <td className="border p-3">
+              <div className="font-semibold text-purple-700 text-base">
+                {p?.full_name}
+              </div>
+
+              <div className="text-gray-700 text-xs">
+                <b>Giới tính:</b> {p?.gender}
+              </div>
+              <div className="text-gray-700 text-xs">
+                <b>Ngày sinh:</b> {p?.date_of_birth}
+              </div>
+              <div className="text-gray-700 text-xs">
+                <b>SĐT:</b> {p?.phone}
+              </div>
+              <div className="text-gray-700 text-xs">
+                <b>Địa chỉ:</b> {p?.address}
+              </div>
+
+              {/* XEM THÊM */}
+              <details className="mt-1 text-xs cursor-pointer bg-gray-50 p-2 rounded border">
+                <summary className="text-blue-600 font-medium text-xs">
+                  Xem thêm
+                </summary>
+
+                <div className="mt-2 space-y-1">
+                  <div><b>Nghề nghiệp:</b> {p?.job}</div>
+                  <div><b>Dân tộc:</b> {p?.ethnicity}</div>
+                  <div><b>Quốc gia:</b> {p?.nationality}</div>
+                  <div><b>Loại giấy tờ:</b> {p?.id_type}</div>
+                  <div><b>Số định danh:</b> {p?.id_number}</div>
+                </div>
+              </details>
+            </td>
+
+            {/* KHOA */}
+            <td className="border text-center">{a.department?.name}</td>
+
+            {/* BÁC SĨ */}
+            <td className="border text-center">{a.appointedDoctor?.name}</td>
+
+            {/* NGÀY */}
+            <td className="border text-center">{a.appointment_date}</td>
+
+            {/* GIỜ */}
+            <td className="border text-center">{a.appointment_time}</td>
+
+            {/* TRẠNG THÁI */}
+            <td className="border text-center">
+              {a.status === "pending" && (
+                <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                  Chờ duyệt
+                </span>
+              )}
+              {a.status === "confirmed" && (
+                <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                  Đã duyệt
+                </span>
+              )}
+              {a.status === "cancelled" && (
+                <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                  Từ chối
+                </span>
+              )}
+              {a.status === "done" && (
+                <span className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded">
+                  Hoàn tất
+                </span>
+              )}
+            </td>
+
+            {/* THAO TÁC */}
+            <td className="border p-3 text-center space-x-1">
+              <button
+                onClick={() => handleEdit(a)}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 text-xs rounded"
+              >
+                Sửa
+              </button>
+
+              {a.status === "pending" && (
+                <>
+                  <button
+                    onClick={() => handleApprove(a.id)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 text-xs rounded"
+                  >
+                    Duyệt
+                  </button>
+
+                  <button
+                    onClick={() => handleReject(a.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-xs rounded"
+                  >
+                    Từ chối
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={() => handleDelete(a.id)}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 text-xs rounded"
+              >
+                Xoá
+              </button>
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+</div>
+</div>
+
+
   );
 };
 

@@ -25,12 +25,35 @@ const getAllDoctors = async (req, res) => {
 
 const getDoctorById = async (req, res) => {
   try {
-    const doctor = await doctorService.getById(req.params.id);
-    if (!doctor)
+    const id = req.params.id;
+
+    const doctor = await db.Doctor.findByPk(id, {
+      include: [
+        {
+          model: db.ClinicRoom,
+          as: "clinicRoom", // ← phòng khám
+        },
+        {
+          model: db.Department,
+          as: "departments", // ← chuyên khoa
+          through: { attributes: [] },
+        },
+        {
+          model: db.Service,
+          as: "services", // ← dịch vụ
+          through: { attributes: [] },
+        },
+      ],
+    });
+
+    if (!doctor) {
       return res.status(404).json({ message: "Không tìm thấy bác sĩ" });
-    res.json(doctor);
+    }
+
+    return res.json(doctor);
   } catch (err) {
-    res.status(500).json({ message: "Lỗi", error: err.message });
+    console.error("Lỗi:", err);
+    return res.status(500).json({ message: "Lỗi", error: err.message });
   }
 };
 

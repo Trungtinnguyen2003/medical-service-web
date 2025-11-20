@@ -47,11 +47,14 @@ router.put(
   checkAdmin,
   appointmentController.updateAppointment
 );
-router.post(
-  "/by-department",
-  verifyToken,
-  appointmentController.createAppointment
-);
+// router.post(
+//   "/by-department",
+//   verifyToken,
+//   appointmentController.createAppointment
+// );
+
+// ================== ĐẶT LỊCH KHÔNG CHỌN BÁC SĨ ==================
+router.post("/auto-assign", verifyToken, appointmentController.autoAssign);
 
 // ✅ route cho bác sĩ xem lịch
 

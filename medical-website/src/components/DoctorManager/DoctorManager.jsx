@@ -100,78 +100,117 @@ const DoctorManager = () => {
             <thead>
               <tr>
                 <Th>Họ tên</Th>
-                <Th>Email</Th>
+                {/* <Th>Email</Th> */}
                 <Th>Điện thoại</Th>
                 <Th>Giới tính</Th>
                 <Th>Ngày sinh</Th>
                 <Th>Địa chỉ</Th>
                 <Th>Ngày</Th>
                 <Th>Giờ</Th>
-                <Th>Triệu chứng</Th>
+                {/* <Th>Triệu chứng</Th> */}
                 <Th>Dịch vụ</Th>
-                <Th>Gói</Th>
-                <Th>Trạng thái / Hành động</Th>
+                {/* <Th>Gói</Th> */}
+                <Th>Trạng thái / Hành độngg</Th>
               </tr>
             </thead>
             <tbody>
-              {appointments.map((a, i) => (
-                <tr key={a.id} style={{ background: i % 2 ? "#fafafa" : "#ffffff" }}>
-                  <Td>{a.name || a.user?.name || "--"}</Td>
-                  <Td>{a.email || a.user?.email || "--"}</Td>
-                  <Td>{a.phone || a.user?.phone || "--"}</Td>
-                  <Td>{a.gender || a.user?.gender || "--"}</Td>
-                  <Td>{a.date_of_birth || a.user?.date_of_birth || "--"}</Td>
-                  <Td>{a.address || a.user?.address || "--"}</Td>
-                  <Td>{a.appointment_date}</Td>
-                  <Td>{a.appointment_time}</Td>
-                  <Td>{a.symptoms || "--"}</Td>
-                  <Td>{a.bookedService?.title || "--"}</Td>
-                  <Td>{a.servicePackage?.name || "--"}</Td>
-                  <Td>
-                    {a.status === "confirmed" ? (
-                      <>
-                        <button
-                          onClick={() => setSelectedAppointment(a)}
-                          style={{
-                            marginRight: 6,
-                            background: "#8b5cf6",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 8,
-                            padding: "6px 12px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          🩺 Khám
-                        </button>
-                        <button
-                          onClick={() => updateStatus(a.id, "cancelled")}
-                          style={{
-                            background: "#ef4444",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 8,
-                            padding: "6px 12px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          ❌ Hủy
-                        </button>
-                      </>
-                    ) : (
-                      <Status status={a.status}>{a.status}</Status>
-                    )}
-                  </Td>
-                </tr>
-              ))}
-              {appointments.length === 0 && (
-                <tr>
-                  <Td colSpan="12" style={{ textAlign: "center", color: "#6b7280", padding: 24 }}>
-                    Chưa có lịch hẹn
-                  </Td>
-                </tr>
-              )}
-            </tbody>
+  {appointments.map((a, i) => {
+    const p = a.patientProfile; // profile mới
+
+    return (
+      <tr key={a.id} style={{ background: i % 2 ? "#fafafa" : "#ffffff" }}>
+        {/* HỌ TÊN */}
+        <Td style={{ fontWeight: 600, color: "#4f46e5" }}>
+          {p?.full_name || "--"}
+        </Td>
+
+        {/* EMAIL (không có email trong hồ sơ → để trống) */}
+        {/* <Td>{a.user?.email || "--"}</Td> */}
+
+        {/* SĐT */}
+        <Td>{p?.phone || "--"}</Td>
+
+        {/* GIỚI TÍNH */}
+        <Td>{p?.gender || "--"}</Td>
+
+        {/* NGÀY SINH */}
+        <Td>{p?.date_of_birth || "--"}</Td>
+
+        {/* ĐỊA CHỈ */}
+        <Td>{p?.address || "--"}</Td>
+
+        {/* NGÀY */}
+        <Td>{a.appointment_date}</Td>
+
+        {/* GIỜ */}
+        <Td>{a.appointment_time}</Td>
+
+        {/* TRIỆU CHỨNG */}
+        {/* <Td>{a.symptoms || "--"}</Td> */}
+
+        {/* DỊCH VỤ */}
+        <Td>{a.bookedService?.title || "--"}</Td>
+
+        {/* GÓI */}
+        {/* <Td>{a.servicePackage?.name || "--"}</Td> */}
+
+        {/* ACTION */}
+        <Td>
+          {a.status === "confirmed" ? (
+            <>
+              <button
+                onClick={() => setSelectedAppointment(a)}
+                style={{
+                  marginRight: 6,
+                  background: "#8b5cf6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                🩺 Khám
+              </button>
+
+              <button
+                onClick={() => updateStatus(a.id, "cancelled")}
+                style={{
+                  background: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                ❌ Hủy
+              </button>
+            </>
+          ) : (
+            <Status status={a.status}>{a.status}</Status>
+          )}
+        </Td>
+      </tr>
+    );
+  })}
+
+  {appointments.length === 0 && (
+    <tr>
+      <Td
+        colSpan="12"
+        style={{
+          textAlign: "center",
+          color: "#6b7280",
+          padding: 24,
+        }}
+      >
+        Chưa có lịch hẹn
+      </Td>
+    </tr>
+  )}
+</tbody>
+
           </Table>
         </div>
       </div>

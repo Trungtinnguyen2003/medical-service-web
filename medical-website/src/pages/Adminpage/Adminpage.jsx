@@ -14,6 +14,8 @@ import AppointmentManager from "../../components/Admin/AppointmentManager"; // �
 import { useNavigate } from "react-router-dom";
 import DoctorScheduleManager from "../../components/Admin/DoctorScheduleManager";
 import MedicineManager from "../../components/Admin/MedicineManager";
+import ClinicRoomManager from "../../components/Admin/ClinicRoomManager";
+
 
 
 const Wrapper = styled.div`
@@ -79,6 +81,9 @@ const AdminPage = () => {
         return <DoctorScheduleManager />;
       case "medicine":
         return <MedicineManager />;
+        case "clinic-room":
+  return <ClinicRoomManager />;
+
       default:
         return null;
     }
@@ -100,6 +105,10 @@ const AdminPage = () => {
         <MenuItem active={selected === "service"} onClick={() => setSelected("service")}>
           Dịch vụ
         </MenuItem>
+        <MenuItem active={selected === "clinic-room"} onClick={() => setSelected("clinic-room")}>
+  Phòng khám
+</MenuItem>
+
         {/* <MenuItem active={selected === "package"} onClick={() => setSelected("package")}>
           Gói dịch vụ
         </MenuItem> */}
