@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+// src/pages/BookingFlowDepartment/StepDepartmentPayment.jsx
+
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   PageWrapper,
   Layout,
@@ -10,20 +13,66 @@ import {
   MainHeader,
   BottomBar,
   PrimaryButton,
-} from "./style";
-import { getBooking, saveBooking } from "./bookingStorage";
+} from "../BookingFlow/style";
+
+import { getDeptBooking, saveDeptBooking } from "./deptBookingStorage";
 import { API_BASE_URL } from "../../config";
 
-const StepPayment = () => {
+const StepDepartmentPayment = () => {
   const navigate = useNavigate();
-  const booking = getBooking();
+  const booking = getDeptBooking();
 
-  const [method, setMethod] = useState("vnpay"); // default
+  const [method, setMethod] = useState("vnpay");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [clinicRoom, setClinicRoom] = useState(null);
+
   const amount = Number(booking?.service?.price) || 0;
 
+  /* ======================================================
+      ⭐ LOAD PHÒNG KHÁM — TỰ ĐỘNG LẤY TỪ 3 KIỂU DỮ LIỆU
+     ====================================================== */
+  useEffect(() => {
+    const doctor = booking?.assigned_doctor;
+    if (!doctor) return;
+
+    // TH 1: Có clinicRoom đầy đủ từ API
+    if (doctor.clinicRoom?.name) {
+      setClinicRoom(doctor.clinicRoom);
+      return;
+    }
+
+    // TH 2: Có Room từ API cũ
+    if (doctor.Room?.name) {
+      setClinicRoom(doctor.Room);
+      return;
+    }
+
+    // TH 3: Chỉ có clinic_room_id → gọi API để lấy phòng
+    const roomId =
+      doctor.clinic_room_id ||
+      doctor.clinic_room ||
+      doctor.Room?.id;
+
+    if (!roomId) return;
+
+    const fetchRoom = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/clinic-rooms/${roomId}`);
+        const data = await res.json();
+        if (data?.id) setClinicRoom(data);
+      } catch (err) {
+        console.log("Không tải được phòng khám:", err);
+      }
+    };
+
+    fetchRoom();
+  }, []);
+
+  /* ======================================================
+                ⭐ XỬ LÝ TẠO GIAO DỊCH THANH TOÁN
+     ====================================================== */
   const handlePayment = async () => {
     try {
       setLoading(true);
@@ -37,30 +86,25 @@ const StepPayment = () => {
 
       const payload = {
         service_id: booking.service?.id,
-        package_id: null,
-        doctor_id: booking.doctor?.id,
-        appointment_date: booking.date,
+        doctor_id: booking.assigned_doctor?.id,
+        appointment_date: booking.appointment_date,
         slot_id: booking.timeSlot?.id,
-        department_id: booking.department?.id,
+        department_id: booking.department_id,
         patient_profile_id: booking.profile?.id,
-        clinic_room_id: booking?.doctor?.clinic_room_id,
+
+        clinic_room_id: clinicRoom?.id,
 
         amount,
-          flow_type: "doctor",   // ⭐ THÊM VÀO ĐÂY ⭐
+        flow_type: "department",   // ⭐ THÊM VÀO ĐÂY ⭐
       };
 
-      // ==============================
-      // CHỌN API TƯƠNG ỨNG
-      // ==============================
       let endpoint = "";
-
-      if (method === "vnpay") {
+      if (method === "vnpay")
         endpoint = `${API_BASE_URL}/api/payment/vnpay/create`;
-      } else if (method === "momo") {
+      else if (method === "momo")
         endpoint = `${API_BASE_URL}/api/payment/momo/create`;
-      } else if (method === "paypal") {
+      else if (method === "paypal")
         endpoint = `${API_BASE_URL}/api/payment/paypal/create`;
-      }
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -74,19 +118,16 @@ const StepPayment = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Không tạo được giao dịch");
-        return;
+        return setError(data.message || "Không tạo được giao dịch");
       }
 
-      // LƯU LẠI TRANSACTION CỦA ĐƠN HÀNG
-      saveBooking({
+      saveDeptBooking({
+        ...booking,
         payment_transaction_id: data.transactionId,
         payment_method: method,
       });
 
-      // Nếu là PayPal hoặc VNPay hoặc MoMo → đều redirect
       window.location.href = data.paymentUrl;
-
     } catch (err) {
       setError(err.message);
     } finally {
@@ -94,11 +135,13 @@ const StepPayment = () => {
     }
   };
 
+  /* ======================================================
+                            ⭐ RENDER UI
+     ====================================================== */
   return (
     <PageWrapper>
       <Layout>
-
-        {/* ------------------ CỘT 1: Bệnh nhân ------------------ */}
+        {/* ===== SIDEBAR BỆNH NHÂN ===== */}
         <Sidebar style={{ marginTop: "60px" }}>
           <SidebarTitle>Thông tin bệnh nhân</SidebarTitle>
           <SidebarItem><b>Họ tên:</b> {booking.profile?.full_name}</SidebarItem>
@@ -106,7 +149,7 @@ const StepPayment = () => {
           <SidebarItem><b>Địa chỉ:</b> {booking.profile?.address}</SidebarItem>
         </Sidebar>
 
-        {/* ------------------ CỘT 2: Chọn phương thức thanh toán ------------------ */}
+        {/* ===== MAIN ===== */}
         <Main style={{ marginTop: "60px" }}>
           <MainHeader>Chọn phương thức thanh toán</MainHeader>
 
@@ -114,13 +157,14 @@ const StepPayment = () => {
           <label
             onClick={() => setMethod("vnpay")}
             style={{
-              border: method === "vnpay" ? "2px solid #0284c7" : "1px solid #d1d5db",
+              border:
+                method === "vnpay" ? "2px solid #0284c7" : "1px solid #d1d5db",
               display: "flex",
               gap: 10,
               padding: 12,
               borderRadius: 12,
               cursor: "pointer",
-              marginBottom: 14
+              marginBottom: 14,
             }}
           >
             <input
@@ -129,7 +173,8 @@ const StepPayment = () => {
               onChange={() => setMethod("vnpay")}
             />
             <div>
-              <b>VNPay</b><br />
+              <b>VNPay</b>
+              <br />
               <span style={{ fontSize: 13, color: "#6b7280" }}>
                 Thanh toán ATM / Visa / QR VNPay
               </span>
@@ -140,13 +185,14 @@ const StepPayment = () => {
           <label
             onClick={() => setMethod("momo")}
             style={{
-              border: method === "momo" ? "2px solid #db2777" : "1px solid #d1d5db",
+              border:
+                method === "momo" ? "2px solid #db2777" : "1px solid #d1d5db",
               display: "flex",
               gap: 10,
               padding: 12,
               borderRadius: 12,
               cursor: "pointer",
-              marginBottom: 14
+              marginBottom: 14,
             }}
           >
             <input
@@ -155,24 +201,26 @@ const StepPayment = () => {
               onChange={() => setMethod("momo")}
             />
             <div>
-              <b>Ví MoMo</b><br />
+              <b>Ví MoMo</b>
+              <br />
               <span style={{ fontSize: 13, color: "#6b7280" }}>
                 Thanh toán ví điện tử, liên kết ngân hàng
               </span>
             </div>
           </label>
 
-          {/* PAYPAL */}
+          {/* PayPal */}
           <label
             onClick={() => setMethod("paypal")}
             style={{
-              border: method === "paypal" ? "2px solid #0f766e" : "1px solid #d1d5db",
+              border:
+                method === "paypal" ? "2px solid #0f766e" : "1px solid #d1d5db",
               display: "flex",
               gap: 10,
               padding: 12,
               borderRadius: 12,
               cursor: "pointer",
-              marginBottom: 14
+              marginBottom: 14,
             }}
           >
             <input
@@ -181,9 +229,10 @@ const StepPayment = () => {
               onChange={() => setMethod("paypal")}
             />
             <div>
-              <b>PayPal</b><br />
+              <b>PayPal</b>
+              <br />
               <span style={{ fontSize: 13, color: "#6b7280" }}>
-                Thanh toán bằng PayPal (Visa / MasterCard)
+                Thanh toán bằng PayPal
               </span>
             </div>
           </label>
@@ -203,7 +252,7 @@ const StepPayment = () => {
           )}
 
           <BottomBar>
-            <button onClick={() => navigate("/xac-nhan-thong-tin")}>
+            <button onClick={() => navigate("/booking-department?step=confirm")}>
               ← Quay lại
             </button>
 
@@ -213,14 +262,27 @@ const StepPayment = () => {
           </BottomBar>
         </Main>
 
-        {/* ------------------ CỘT 3: Thông tin dịch vụ ------------------ */}
+        {/* ===== SIDEBAR THÔNG TIN THANH TOÁN ===== */}
         <Sidebar style={{ marginTop: "60px" }}>
           <SidebarTitle>Thông tin thanh toán</SidebarTitle>
+
           <SidebarItem><b>Chuyên khoa:</b> {booking.department?.name}</SidebarItem>
-          <SidebarItem><b>Bác sĩ:</b> {booking.doctor?.name}</SidebarItem>
+
+          <SidebarItem><b>Bác sĩ:</b> {booking.assigned_doctor?.name}</SidebarItem>
+
+          <SidebarItem>
+            <b>Phòng khám:</b>{" "}
+            {clinicRoom
+              ? `${clinicRoom.name}${clinicRoom.code ? ` (${clinicRoom.code})` : ""}`
+              : "Đang tải..."}
+          </SidebarItem>
+
           <SidebarItem><b>Dịch vụ:</b> {booking.service?.title}</SidebarItem>
-          <SidebarItem><b>Ngày khám:</b> {booking.date}</SidebarItem>
+
+          <SidebarItem><b>Ngày khám:</b> {booking.appointment_date}</SidebarItem>
+
           <SidebarItem><b>Giờ khám:</b> {booking.timeSlot?.label}</SidebarItem>
+
           <SidebarItem><b>Tổng cộng:</b> {amount.toLocaleString()} đ</SidebarItem>
         </Sidebar>
 
@@ -229,4 +291,4 @@ const StepPayment = () => {
   );
 };
 
-export default StepPayment;
+export default StepDepartmentPayment;

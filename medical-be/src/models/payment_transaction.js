@@ -43,6 +43,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("initiated", "paid", "failed", "canceled"),
         defaultValue: "initiated",
       },
+      flow_type: {
+        type: DataTypes.STRING,
+        allowNull: true, // "doctor" hoặc "department"
+      },
 
       transaction_no: DataTypes.STRING,
       gateway_order_id: DataTypes.STRING,

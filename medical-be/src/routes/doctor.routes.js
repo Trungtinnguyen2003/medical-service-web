@@ -33,6 +33,7 @@ router.get("/:id/available-slots", controller.getAvailableSlots);
 
 // lấy ngày làm việc
 router.get("/:id/available-days", controller.getAvailableDays);
+router.get("/working", controller.getDoctorsWorkingOnDay);
 
 /* ============================
  * 2) CRUD routes

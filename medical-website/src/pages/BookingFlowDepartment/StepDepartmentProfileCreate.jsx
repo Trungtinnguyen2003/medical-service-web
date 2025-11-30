@@ -1,5 +1,8 @@
+// src/pages/BookingFlowDepartment/StepDepartmentProfileCreate.jsx
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   PageWrapper,
   Layout,
@@ -15,14 +18,14 @@ import {
   Select,
   BottomBar,
   PrimaryButton,
-} from "./style";
+} from "../BookingFlow/style";
 
-import { saveBooking, getBooking } from "./bookingStorage";
+import { getDeptBooking, saveDeptBooking } from "./deptBookingStorage";
 import patientProfileService from "../../services/patientProfile.service";
 
-const StepProfileCreate = () => {
+const StepDepartmentProfileCreate = () => {
   const navigate = useNavigate();
-  const booking = getBooking();
+  const booking = getDeptBooking();
 
   const [form, setForm] = useState({
     full_name: "",
@@ -43,12 +46,12 @@ const StepProfileCreate = () => {
       const res = await patientProfileService.createProfile(form);
 
       if (res?.profile) {
-        saveBooking({
+        saveDeptBooking({
           ...booking,
           profile: res.profile,
         });
 
-        navigate("/chon-ho-so");
+        navigate("/booking-department?step=profile");
       } else {
         alert("Không tạo được hồ sơ");
       }
@@ -61,35 +64,37 @@ const StepProfileCreate = () => {
   return (
     <PageWrapper>
       <Layout>
-        {/* Sidebar */}
-        <Sidebar style={{ marginTop: "60px" }}>
+        {/* SIDEBAR */}
+        <Sidebar  style={{ marginTop: "60px" }}>
           <SidebarTitle>Thông tin đặt khám</SidebarTitle>
 
           <SidebarItem><b>Chuyên khoa:</b> {booking.department?.name}</SidebarItem>
           <SidebarItem><b>Dịch vụ:</b> {booking.service?.title}</SidebarItem>
-          <SidebarItem><b>Ngày khám:</b> {booking.date}</SidebarItem>
+          <SidebarItem><b>Bác sĩ:</b> {booking.assigned_doctor?.name}</SidebarItem>
+          <SidebarItem><b>Ngày khám:</b> {booking.appointment_date}</SidebarItem>
           <SidebarItem><b>Giờ khám:</b> {booking.timeSlot?.label}</SidebarItem>
         </Sidebar>
 
-        {/* Main form */}
-        <Main style={{ marginTop: "60px" }}>
+        {/* MAIN FORM */}
+        <Main  style={{ marginTop: "60px" }}>
           <MainHeader>Tạo hồ sơ bệnh nhân</MainHeader>
-          <StepTitle>Thông tin chung</StepTitle>
 
+          <StepTitle>Thông tin chung</StepTitle>
           <StepDescription>
-            Hồ sơ này sẽ được lưu lại cho những lần đặt khám sau.
+            Hồ sơ này sẽ được dùng cho lần khám này và các lần sau.
           </StepDescription>
 
-          {/* Họ tên */}
+          {/* FORM INPUTS */}
           <FormGroup>
             <label>Họ và tên *</label>
             <Input
               value={form.full_name}
-              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, full_name: e.target.value })
+              }
             />
           </FormGroup>
 
-          {/* Ngày sinh */}
           <FormGroup>
             <label>Ngày sinh *</label>
             <Input
@@ -101,46 +106,49 @@ const StepProfileCreate = () => {
             />
           </FormGroup>
 
-          {/* Giới tính */}
           <FormGroup>
             <label>Giới tính *</label>
             <Select
               value={form.gender}
-              onChange={(e) => setForm({ ...form, gender: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, gender: e.target.value })
+              }
             >
               <option value="">Chọn giới tính</option>
               <option value="Nam">Nam</option>
               <option value="Nữ">Nữ</option>
-              <option value="Khác">Khác</option>
             </Select>
           </FormGroup>
 
-          {/* Số điện thoại */}
           <FormGroup>
             <label>Số điện thoại *</label>
             <Input
               value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, phone: e.target.value })
+              }
             />
           </FormGroup>
 
-          {/* Nghề nghiệp */}
           <FormGroup>
             <label>Nghề nghiệp *</label>
             <Input
               value={form.job}
-              onChange={(e) => setForm({ ...form, job: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, job: e.target.value })
+              }
             />
           </FormGroup>
 
-          {/* Mã định danh */}
           <FormGroup>
-            <label>Mã định danh / CCCD *</label>
-            <div style={{ display: "flex", gap: "10px" }}>
+            <label>Mã định danh *</label>
+            <div style={{ display: "flex", gap: 10 }}>
               <Select
-                style={{ width: "150px" }}
+                style={{ width: 150 }}
                 value={form.id_type}
-                onChange={(e) => setForm({ ...form, id_type: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, id_type: e.target.value })
+                }
               >
                 <option value="CCCD">CCCD</option>
                 <option value="CMND">CMND</option>
@@ -156,7 +164,6 @@ const StepProfileCreate = () => {
             </div>
           </FormGroup>
 
-          {/* Quốc gia */}
           <FormGroup>
             <label>Quốc gia *</label>
             <Input
@@ -167,7 +174,6 @@ const StepProfileCreate = () => {
             />
           </FormGroup>
 
-          {/* Dân tộc */}
           <FormGroup>
             <label>Dân tộc *</label>
             <Input
@@ -178,19 +184,23 @@ const StepProfileCreate = () => {
             />
           </FormGroup>
 
-          {/* Địa chỉ */}
           <FormGroup>
             <label>Địa chỉ *</label>
             <Input
               value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, address: e.target.value })
+              }
             />
           </FormGroup>
 
-          {/* Buttons */}
           <BottomBar>
-            <button onClick={() => navigate("/chon-ho-so")}>« Quay lại</button>
-            <PrimaryButton onClick={handleSubmit}>Tạo hồ sơ</PrimaryButton>
+            <button onClick={() => navigate("/booking-department?step=profile")}>
+              « Quay lại
+            </button>
+            <PrimaryButton onClick={handleSubmit}>
+              Tạo hồ sơ
+            </PrimaryButton>
           </BottomBar>
         </Main>
       </Layout>
@@ -198,4 +208,4 @@ const StepProfileCreate = () => {
   );
 };
 
-export default StepProfileCreate;
+export default StepDepartmentProfileCreate;

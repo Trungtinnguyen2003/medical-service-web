@@ -67,13 +67,16 @@ const StepDepartmentSelect = ({ onNext }) => {
   }, []);
 
   const handleSelect = (dept) => {
+      localStorage.removeItem("deptBooking");
     saveDeptBooking({
       ...booking,
       department: dept,
       department_id: dept.id,
     });
 
-    navigate(`/dat-lich?flow=department&step=service&departmentId=${dept.id}`);
+    navigate(`/booking-department?step=service&departmentId=${dept.id}`);
+
+
 
   };
 

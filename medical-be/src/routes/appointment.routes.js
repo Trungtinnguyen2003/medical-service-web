@@ -35,6 +35,11 @@ router.put(
   appointmentController.doctorUpdateStatus
 );
 
+router.get(
+  "/available-doctor",
+  appointmentController.getAvailableDoctorForDepartment
+);
+
 router.post("/", verifyToken, appointmentController.createAppointment);
 router.get("/", appointmentController.getAllAppointments);
 router.get("/my", verifyToken, appointmentController.getMyAppointments);

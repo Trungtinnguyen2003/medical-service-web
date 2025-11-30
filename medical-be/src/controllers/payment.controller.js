@@ -297,6 +297,9 @@ const momoReturn = async (req, res) => {
   }
 };
 
+// ==========================
+// 🔵 CREATE PAYPAL PAYMENT
+// ==========================
 const createPayPalPayment = async (req, res) => {
   try {
     const user_id = req.user.id;
@@ -311,7 +314,15 @@ const createPayPalPayment = async (req, res) => {
       department_id,
       patient_profile_id,
       clinic_room_id,
+      flow_type, // ⭐ thêm vào
     } = req.body;
+
+    // Validate
+    if (!flow_type) {
+      return res
+        .status(400)
+        .json({ message: "Thiếu flow_type (doctor/department)" });
+    }
 
     // Lưu transaction
     const transaction = await PaymentTransaction.create({
@@ -325,6 +336,7 @@ const createPayPalPayment = async (req, res) => {
       patient_profile_id,
       clinic_room_id,
       amount,
+      flow_type, // ⭐ LƯU FLOW
       method: "paypal",
       status: "initiated",
     });
@@ -352,14 +364,17 @@ const createPayPalPayment = async (req, res) => {
 
 // PayPal redirect RETURN_URL
 // PayPal redirect RETURN_URL
+// ==========================
+// 🔵 PAYPAL RETURN
+// ==========================
 const paypalReturn = async (req, res) => {
   try {
     const orderId = req.query.token;
 
-    // 1. Capture order
+    // 1. Capture order từ PayPal
     const capture = await captureOrder(orderId);
 
-    // 2. Lấy lại transaction theo orderId
+    // 2. Lấy transaction
     const transaction = await PaymentTransaction.findOne({
       where: { gateway_order_id: orderId },
     });
@@ -370,39 +385,74 @@ const paypalReturn = async (req, res) => {
       );
     }
 
+    // 3. Nếu thanh toán thành công
+    // ⭐ Nếu thanh toán thành công
     if (capture.result.status === "COMPLETED") {
-      // 3. Update transaction
       await transaction.update({
         status: "paid",
         transaction_no: capture.result.id,
         gateway_response: JSON.stringify(capture.result),
       });
 
-      // 4. Check appointment exists
-      const existing = await Appointment.findOne({
+      // Lấy label giờ khám
+      const slot = await db.TimeSlot.findByPk(transaction.slot_id);
+      const appointment_time = slot ? slot.label : null;
+
+      // ⭐ FLOW CHUYÊN KHOA - Tạo lịch duy nhất tại đây
+      if (transaction.flow_type === "department") {
+        const existed = await Appointment.findOne({
+          where: { payment_transaction_id: transaction.id },
+        });
+
+        let appointment = existed;
+
+        if (!appointment) {
+          appointment = await Appointment.create({
+            user_id: transaction.user_id,
+            service_id: transaction.service_id,
+            doctor_id: transaction.doctor_id,
+            department_id: transaction.department_id,
+
+            patient_profile_id: transaction.patient_profile_id,
+            clinic_room_id: transaction.clinic_room_id,
+
+            appointment_date: transaction.appointment_date,
+            appointment_time,
+            slot_id: transaction.slot_id,
+
+            status: "pending",
+            payment_status: "paid",
+            payment_method: "paypal",
+            payment_transaction_id: transaction.id,
+          });
+        }
+
+        return res.redirect(
+          `${process.env.CLIENT_URL}/dat-lich-thanh-cong-khoa?appointment_id=${appointment.id}`
+        );
+      }
+
+      // ⭐ FLOW BÁC SĨ – GIỮ NGUYÊN
+      // ⭐⭐ FLOW BÁC SĨ – TẠO APPOINTMENT ⭐⭐
+      let existedDoctor = await Appointment.findOne({
         where: { payment_transaction_id: transaction.id },
       });
 
-      if (!existing) {
-        // 🔥 Lấy giờ khám từ TimeSlot
-        const slot = await db.TimeSlot.findByPk(transaction.slot_id);
-        const appointment_time = slot ? slot.label : null;
-
-        // 5. Tạo Appointment
-        await Appointment.create({
+      if (!existedDoctor) {
+        existedDoctor = await Appointment.create({
           user_id: transaction.user_id,
           service_id: transaction.service_id,
           package_id: transaction.package_id,
           doctor_id: transaction.doctor_id,
           department_id: transaction.department_id,
-          patient_profile_id: transaction.patient_profile_id,
-          appointment_date: transaction.appointment_date,
 
-          // ⭐ GIỜ KHÁM
+          patient_profile_id: transaction.patient_profile_id,
+          clinic_room_id: transaction.clinic_room_id,
+
+          appointment_date: transaction.appointment_date,
           appointment_time,
           slot_id: transaction.slot_id,
 
-          clinic_room_id: transaction.clinic_room_id || null,
           status: "pending",
           payment_status: "paid",
           payment_method: "paypal",
@@ -410,10 +460,12 @@ const paypalReturn = async (req, res) => {
         });
       }
 
-      return res.redirect(`${process.env.CLIENT_URL}/dat-lich-thanh-cong`);
+      return res.redirect(
+        `${process.env.CLIENT_URL}/dat-lich-thanh-cong?appointment_id=${existedDoctor.id}`
+      );
     }
 
-    // ❌ THẤT BẠI
+    // ❌ Nếu thất bại
     await transaction.update({
       status: "failed",
       gateway_response: JSON.stringify(capture),

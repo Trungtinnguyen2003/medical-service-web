@@ -24,25 +24,6 @@ import {
 
 import { saveDeptBooking, getDeptBooking } from "./deptBookingStorage";
 
-// ====================== Animation ======================
-const styles = {
-  fadeIn: { animation: "fadeIn .6s ease", opacity: 0 },
-  slideUp: { animation: "slideUp .6s ease", opacity: 0, transform: "translateY(15px)" },
-};
-
-const injectKeyframes = () => {
-  if (document.getElementById("dept-service-anims")) return;
-
-  const style = document.createElement("style");
-  style.id = "dept-service-anims";
-  style.innerHTML = `
-    @keyframes fadeIn { from { opacity: 0;} to { opacity: 1;} }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(15px);} 
-                         to { opacity: 1; transform: translateY(0);} }
-  `;
-  document.head.appendChild(style);
-};
-
 const StepDepartmentService = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -51,8 +32,6 @@ const StepDepartmentService = () => {
   const [baseService, setBaseService] = useState(null);
 
   useEffect(() => {
-    injectKeyframes();
-
     serviceService.getAllServices().then((res) => {
       if (!res || res.length === 0) return;
 
@@ -79,13 +58,13 @@ const StepDepartmentService = () => {
       service: baseService,
     });
 
-    navigate(`/dat-lich?flow=department&step=date&serviceId=${baseService.id}`);
+    navigate(`/booking-department?step=date&serviceId=${baseService.id}`);
   };
 
   return (
-    <PageWrapper style={styles.fadeIn}>
+    <PageWrapper>
       <Layout>
-        {/* ================= SIDEBAR ================= */}
+        {/* SIDEBAR */}
         <Sidebar style={{ marginTop: "60px" }}>
           <SidebarTitle>Thông tin đã chọn</SidebarTitle>
 
@@ -102,27 +81,27 @@ const StepDepartmentService = () => {
           </SidebarItem>
         </Sidebar>
 
-        {/* ================= MAIN ================= */}
+        {/* MAIN */}
         <Main style={{ marginTop: "60px" }}>
-          <MainHeader style={styles.slideUp}>Vui lòng chọn dịch vụ</MainHeader>
+          <MainHeader>Vui lòng chọn dịch vụ</MainHeader>
 
-          <StepTitle style={styles.slideUp}>Dịch vụ khám ban đầu</StepTitle>
+          <StepTitle>Dịch vụ khám ban đầu</StepTitle>
 
-          <StepDescription style={styles.slideUp}>
-            Đây là dịch vụ khám lâm sàng ban đầu. Bác sĩ sẽ đánh giá và chỉ định cận lâm sàng nếu cần.
+          <StepDescription>
+            Đây là dịch vụ khám lâm sàng ban đầu. Bác sĩ sẽ đánh giá và chỉ định
+            cận lâm sàng nếu cần.
           </StepDescription>
 
           {!baseService && <p>Đang tải dịch vụ khám ban đầu...</p>}
 
           {baseService && (
-            <List style={styles.fadeIn}>
+            <List>
               <ListItem
                 onClick={handleSelect}
                 style={{
                   cursor: "pointer",
                   borderRadius: "12px",
                   transition: "0.25s",
-                  animation: "fadeIn .7s ease",
                 }}
               >
                 <ItemMain>
@@ -143,7 +122,11 @@ const StepDepartmentService = () => {
           )}
 
           <BottomBar>
-            <button onClick={() => navigate(`/dat-lich?flow=department&step=department`)}>
+            <button
+              onClick={() =>
+                navigate(`/booking-department?step=department`)
+              }
+            >
               &laquo; Quay lại
             </button>
           </BottomBar>

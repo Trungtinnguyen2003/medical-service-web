@@ -1,8 +1,11 @@
-// src/pages/BookingFlow/StepSuccess.jsx
+// src/pages/BookingFlowDepartment/StepSuccessDepartment.jsx
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getBooking } from "./bookingStorage";
+import { getDeptBooking } from "./deptBookingStorage";
+
+// ====================== STYLE COPY Y NGUYÊN FLOW BÁC SĨ ======================
 
 const PageWrapper = styled.div`
   background: #f3f6fc;
@@ -83,15 +86,17 @@ const PrimaryButton = styled.button`
   }
 `;
 
+// ====================== TẠO MÃ PHIẾU ======================
 const generateTicketCode = () => {
   const year = new Date().getFullYear();
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `T${year}${random}`;
 };
 
-const StepSuccess = () => {
+// ====================== COMPONENT ======================
+const StepSuccessDepartment = () => {
   const navigate = useNavigate();
-  const booking = getBooking();
+  const booking = getDeptBooking();
   const [ticketCode, setTicketCode] = useState("");
 
   useEffect(() => {
@@ -105,6 +110,7 @@ const StepSuccess = () => {
 
         <Title>Phiếu Khám Bệnh</Title>
 
+        {/* Mã phiếu */}
         <Row>
           <Label>Mã phiếu khám:</Label>
           <Value>{ticketCode}</Value>
@@ -112,7 +118,7 @@ const StepSuccess = () => {
 
         <Divider />
 
-        {/* THÔNG TIN BỆNH NHÂN */}
+        {/* Bệnh nhân */}
         <Row>
           <Label>Họ tên bệnh nhân:</Label>
           <Value>{booking.profile?.full_name || "—"}</Value>
@@ -125,12 +131,14 @@ const StepSuccess = () => {
 
         <Row>
           <Label>Năm sinh:</Label>
-          <Value>{booking.profile?.date_of_birth?.split("-")[0] || "—"}</Value>
+          <Value>
+            {booking.profile?.date_of_birth?.split("-")[0] || "—"}
+          </Value>
         </Row>
 
         <Divider />
 
-        {/* THÔNG TIN LỊCH KHÁM */}
+        {/* Thông tin khám */}
         <Row>
           <Label>Dịch vụ:</Label>
           <Value>{booking.service?.title || "—"}</Value>
@@ -138,19 +146,21 @@ const StepSuccess = () => {
 
         <Row>
           <Label>Bác sĩ:</Label>
-          <Value>{booking.doctor?.name || "Chưa chọn bác sĩ"}</Value>
+          <Value>{booking.assigned_doctor?.name || "—"}</Value>
         </Row>
 
         <Row>
           <Label>Phòng khám:</Label>
           <Value>
-            {booking.doctor?.clinicRoom
-              ? `${booking.doctor.clinicRoom.name} ${
-                  booking.doctor.clinicRoom.code
-                    ? `(${booking.doctor.clinicRoom.code})`
+            {booking.assigned_doctor?.clinicRoom
+              ? `${booking.assigned_doctor.clinicRoom.name} ${
+                  booking.assigned_doctor.clinicRoom.code
+                    ? `(${booking.assigned_doctor.clinicRoom.code})`
                     : ""
                 }`
-              : "Chưa gán"}
+              : booking.assigned_doctor?.Room?.name ||
+                booking.assigned_doctor?.clinic_room ||
+                "Chưa gán"}
           </Value>
         </Row>
 
@@ -161,7 +171,7 @@ const StepSuccess = () => {
 
         <Row>
           <Label>Ngày khám:</Label>
-          <Value>{booking.date || "—"}</Value>
+          <Value>{booking.appointment_date || "—"}</Value>
         </Row>
 
         <Row>
@@ -171,10 +181,18 @@ const StepSuccess = () => {
 
         <Divider />
 
-        {/* THANH TOÁN */}
+        {/* Thanh toán */}
         <Row>
           <Label>Hình thức thanh toán:</Label>
-          <Value>Thanh toán tại quầy</Value>
+          <Value>
+            {booking.payment_method === "vnpay"
+              ? "VNPay"
+              : booking.payment_method === "momo"
+              ? "MoMo"
+              : booking.payment_method === "paypal"
+              ? "PayPal"
+              : "Không xác định"}
+          </Value>
         </Row>
 
         <Row>
@@ -190,4 +208,4 @@ const StepSuccess = () => {
   );
 };
 
-export default StepSuccess;
+export default StepSuccessDepartment;

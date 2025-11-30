@@ -115,20 +115,40 @@ const getServicesByDepartment = async (departmentId) => {
 };
 
 // 3. Lấy danh sách khung giờ
+// 3. Lấy danh sách khung giờ (dùng chung với flow đặt theo bác sĩ)
 const getTimeSlots = async () => {
-  const res = await axios.get(`${API_BASE_URL}/timeslots`);
+  const res = await axios.get("http://localhost:5000/api/time-slots");
   return res.data;
 };
 
 // 4. Tạo lịch auto-assign cho chuyên khoa
 const autoAssignAppointment = async (payload) => {
-  const res = await axios.post(
-    `${API_BASE_URL}/appointment/auto-assign`,
-    payload,
-    {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    }
-  );
+  const res = await axios.post(`${API_BASE_URL}/auto-assign`, payload, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+
+  return res.data;
+};
+
+// Lấy bác sĩ khả dụng theo chuyên khoa & ngày
+const getAvailableDoctorForDepartment = async (departmentId, date) => {
+  const res = await axios.get(`${API_BASE_URL}/available-doctor`, {
+    params: {
+      department_id: departmentId,
+      date,
+    },
+  });
+
+  return res.data;
+};
+// 🔷 Lấy bác sĩ LÀM VIỆC theo ngày (flow chuyên khoa – mới)
+const getDoctorsWorkingOnDay = async (departmentId, date) => {
+  const res = await axios.get(`http://localhost:5000/api/doctors/working`, {
+    params: {
+      departmentId,
+      date,
+    },
+  });
   return res.data;
 };
 
@@ -147,6 +167,8 @@ const appointmentService = {
   getServicesByDepartment,
   getTimeSlots,
   autoAssignAppointment,
+  getAvailableDoctorForDepartment,
+  getDoctorsWorkingOnDay,
 };
 
 export default appointmentService;

@@ -1,31 +1,43 @@
-// src/pages/Bookingpage/Bookingpage.jsx
 import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
+/* ===========================================================
+   WRAPPER
+=========================================================== */
 const PageWrapper = styled.div`
   min-height: calc(100vh - 80px);
-  padding: 40px 16px;
+  padding: 60px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at top left, #e8f3ff 0, #f8fbff 45%, #ffffff 100%);
+
+  background: linear-gradient(
+    135deg,
+    #eef6ff 0%,
+    #f8fbff 40%,
+    #ffffff 100%
+  );
 `;
 
+/* ===========================================================
+   MAIN CARD
+=========================================================== */
 const Card = styled.div`
   width: 100%;
-  max-width: 960px;
+  max-width: 900px;
   background: #ffffff;
-  border-radius: 24px;
-  padding: 32px 28px 32px;
-  box-shadow: 0 18px 45px rgba(15, 35, 95, 0.08);
-  border: 1px solid rgba(10, 132, 255, 0.06);
+  border-radius: 28px;
+  padding: 40px 50px;
+  box-shadow: 0 20px 50px rgba(15, 40, 85, 0.12);
+  border: 1px solid rgba(10, 132, 255, 0.08);
+
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
 
-  @media (min-width: 768px) {
-    padding: 40px 40px 36px;
+  @media (max-width: 768px) {
+    padding: 32px 22px;
   }
 `;
 
@@ -37,9 +49,13 @@ const Badge = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
+
+  padding: 4px 14px;
   border-radius: 999px;
-  background: rgba(10, 132, 255, 0.06);
+
+  background: rgba(10, 132, 255, 0.08);
+  border: 1px solid rgba(10, 132, 255, 0.1);
+
   color: #0a84ff;
   font-size: 12px;
   font-weight: 600;
@@ -55,128 +71,104 @@ const Dot = styled.span`
 `;
 
 const Title = styled.h2`
-  font-size: 24px;
-  margin: 10px 0 4px;
+  font-size: 28px;
+  margin-top: 16px;
   color: #111827;
-  font-weight: 700;
+  font-weight: 800;
 
-  @media (min-width: 768px) {
-    font-size: 28px;
+  @media (max-width: 768px) {
+    font-size: 24px;
   }
 `;
 
 const Subtitle = styled.p`
-  color: #6b7280;
-  font-size: 14px;
+  color: #55627a;
+  font-size: 15px;
   max-width: 620px;
-  line-height: 1.5;
+  line-height: 1.6;
 `;
 
 const SmallNote = styled.p`
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: 12px;
   color: #9ca3af;
 `;
 
+/* ===========================================================
+   CONTENT: 2 OPTION BOXES
+=========================================================== */
 const Content = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
 
-  @media (min-width: 900px) {
+  @media (min-width: 820px) {
     flex-direction: row;
-    align-items: stretch;
+    gap: 26px;
   }
 `;
 
 const OptionColumn = styled.div`
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 18px;
 `;
 
 const IconCircle = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(37, 99, 235, 0.08); /* mặc định */
-  font-size: 20px;
-  transition: background 0.25s ease;
+  background: rgba(20, 115, 230, 0.12);
+  font-size: 22px;
 `;
 
 const OptionCard = styled.button`
   width: 100%;
   border: none;
   border-radius: 18px;
-  padding: 18px 18px 16px;
+
+  padding: 22px 20px 20px;
   text-align: left;
   cursor: pointer;
-  background: #ffffff; /* ➜ mặc định TRẮNG */
-  color: #111827;
+  background: #ffffff;
+
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
-  transform: translateY(0);
+
+  box-shadow: 0 6px 18px rgba(20, 35, 75, 0.08);
+
   transition: all 0.25s ease;
 
-  /* ICON background cũng trắng */
-  ${IconCircle} {
-    background: rgba(37, 99, 235, 0.08);
-  }
-
-  /* Khi hover mới xanh */
   &:hover {
-    background: linear-gradient(135deg, #e4f0ff, #d8e9ff); /* xanh nhạt */
-    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.20);
+    background: linear-gradient(135deg, #e8f1ff, #dbe8ff);
+    box-shadow: 0 12px 28px rgba(20, 35, 75, 0.18);
     transform: translateY(-4px);
   }
-
-  &:hover ${IconCircle} {
-    background: rgba(255, 255, 255, 0.4);
-  }
-
-  &:before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-  }
-
-  &:hover:before {
-    opacity: 1;
-  }
 `;
-
 
 const OptionHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 `;
 
-
-
-
 const OptionTitle = styled.div`
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
+  color: #0f172a;
 `;
 
 const OptionDesc = styled.p`
   margin-top: 4px;
   margin-bottom: 2px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: ${({ primary }) => (primary ? "#000000ff" : "#4b5563")};
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
 `;
 
 const TagRow = styled.div`
@@ -188,102 +180,98 @@ const TagRow = styled.div`
 
 const Tag = styled.span`
   font-size: 11px;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid ${({ primary }) => (primary ? "rgba(239, 246, 255, 0.4)" : "#e5e7eb")};
-  background: ${({ primary }) =>
-    primary ? "rgba(15, 118, 255, 0.3)" : "rgba(249, 250, 251, 0.9)"};
-  color: ${({ primary }) => (primary ? "#eff6ff" : "#6b7280")};
+  border: 1px solid #e5e7eb;
+  background: rgba(248, 249, 250, 0.9);
+  color: #6b7280;
 `;
 
+/* ===========================================================
+   DIVIDER + HELP BOX
+=========================================================== */
 const Divider = styled.div`
   width: 100%;
   height: 1px;
+  margin: 10px 0;
   background: linear-gradient(to right, transparent, #e5e7eb, transparent);
 `;
 
 const HelpBox = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   color: #6b7280;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding-top: 4px;
+  align-items: center;
+  gap: 12px;
 `;
 
 const HelpIcon = styled.div`
-  font-size: 16px;
-  margin-top: 1px;
+  font-size: 18px;
 `;
 
-const HelpText = styled.div`
-  strong {
-    color: #111827;
-    font-weight: 600;
-  }
-`;
-
+/* ===========================================================
+   MAIN COMPONENT
+=========================================================== */
 const Bookingpage = () => {
   const navigate = useNavigate();
 
-  const goDoctorFlow = () => {
-    // Giữ nguyên logic cũ
-    navigate("/booking");
-  };
-
-  const goDepartmentFlow = () => {
-    // Giữ nguyên logic cũ
+  const goDoctorFlow = () => navigate("/booking");
+  const goDepartmentFlow = () =>
     navigate("/booking-department?step=department");
-  };
 
   return (
     <PageWrapper >
-      <Card style={{ marginTop: "60px" }}>
+      <Card style={{ marginTop: "30px" }}>
         <Header>
-          <Badge >
+          <Badge>
             <Dot /> Đặt lịch khám trực tuyến
           </Badge>
+
           <Title>Chọn cách đặt lịch phù hợp với bạn</Title>
+
           <Subtitle>
-            Bạn có thể đặt lịch theo{" "}
-            <strong>bác sĩ cụ thể</strong> hoặc chọn{" "}
-            <strong>chuyên khoa</strong> nếu chưa biết nên gặp bác sĩ nào. Hệ
-            thống sẽ gợi ý lịch khám phù hợp.
+            Hệ thống hỗ trợ đặt lịch thông minh: theo <strong>bác sĩ</strong> hoặc
+            theo <strong>chuyên khoa</strong>.  
           </Subtitle>
-          <SmallNote>* Bạn có thể thay đổi lựa chọn ở các bước tiếp theo.</SmallNote>
+
+          <SmallNote>* Bạn có thể thay đổi lựa chọn ở bước tiếp theo.</SmallNote>
         </Header>
 
         <Content>
+          {/* ===== 1. Bác sĩ ===== */}
           <OptionColumn>
-            <OptionCard primary onClick={goDoctorFlow}>
+            <OptionCard onClick={goDoctorFlow}>
               <OptionHeader>
-                <IconCircle primary>🩺</IconCircle>
+                <IconCircle>🩺</IconCircle>
                 <OptionTitle>Đặt theo bác sĩ</OptionTitle>
               </OptionHeader>
-              <OptionDesc primary>
-                Phù hợp khi bạn đã có bác sĩ theo dõi hoặc được giới thiệu
-                trước. Xem lịch trống theo từng bác sĩ và chọn khung giờ cụ thể.
+
+              <OptionDesc>
+                Phù hợp khi bạn muốn khám đúng bác sĩ quen hoặc được giới thiệu.
               </OptionDesc>
+
               <TagRow>
-                <Tag primary>Bác sĩ quen</Tag>
-                <Tag primary>Theo dõi lâu dài</Tag>
-                <Tag primary>Lịch riêng từng bác sĩ</Tag>
+                <Tag>Bác sĩ quen</Tag>
+                <Tag>Lịch riêng từng bác sĩ</Tag>
+                <Tag>Theo dõi dài hạn</Tag>
               </TagRow>
             </OptionCard>
           </OptionColumn>
 
+          {/* ===== 2. Chuyên khoa ===== */}
           <OptionColumn>
             <OptionCard onClick={goDepartmentFlow}>
               <OptionHeader>
                 <IconCircle>🏥</IconCircle>
                 <OptionTitle>Đặt theo chuyên khoa</OptionTitle>
               </OptionHeader>
+
               <OptionDesc>
-                Hỗ trợ khi bạn chỉ mới có triệu chứng chung như đau đầu, đau
-                ngực, mệt mỏi... Hệ thống sẽ gợi ý chuyên khoa và bác sĩ phù hợp.
+                Hệ thống tự động gợi ý bác sĩ phù hợp dựa trên chuyên khoa bạn chọn.
               </OptionDesc>
+
               <TagRow>
-                <Tag>Chưa biết chọn bác sĩ</Tag>
+                <Tag>Chưa biết bác sĩ</Tag>
                 <Tag>Tư vấn chuyên khoa</Tag>
                 <Tag>Tối ưu chi phí</Tag>
               </TagRow>
@@ -295,11 +283,8 @@ const Bookingpage = () => {
 
         <HelpBox>
           <HelpIcon>💡</HelpIcon>
-          <HelpText>
-            <strong>Gợi ý:</strong> Nếu đây là lần đầu bạn đặt khám hoặc chưa có bác sĩ
-            quen, hãy thử <strong>&quot;Đặt theo chuyên khoa&quot;</strong> để được tư vấn
-            lộ trình phù hợp.
-          </HelpText>
+          Nếu bạn chưa rõ nên khám bác sĩ nào, hệ thống khuyến nghị chọn{" "}
+          <strong>Đặt theo chuyên khoa</strong>.
         </HelpBox>
       </Card>
     </PageWrapper>

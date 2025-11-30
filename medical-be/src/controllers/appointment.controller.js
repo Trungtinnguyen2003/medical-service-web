@@ -610,21 +610,69 @@ const updateAppointment = async (req, res) => {
 
 const autoAssign = async (req, res) => {
   try {
-    const user_id = req.user?.id;
+    const { department_id, service_id, appointment_date, slot_id } = req.body;
 
     const result = await autoAssignService.assign({
-      ...req.body,
-      user_id,
+      department_id,
+      service_id,
+      appointment_date,
+      slot_id,
     });
 
     return res.json({
-      message: "Đặt lịch thành công (tự phân công bác sĩ)",
-      doctor_assigned: result.doctor,
-      appointment: result.appointment,
+      doctor_assigned: result.doctor, // ⭐ FE chỉ cần cái này
     });
   } catch (err) {
-    console.error("❌ Lỗi auto-assign:", err);
+    console.error("❌ autoAssign error:", err);
     return res.status(400).json({ message: err.message });
+  }
+};
+
+const getAvailableDoctorForDepartment = async (req, res) => {
+  try {
+    const { department_id, date } = req.query;
+
+    if (!department_id || !date) {
+      return res.status(400).json({ message: "Thiếu department_id hoặc date" });
+    }
+
+    // Lấy danh sách bác sĩ trong chuyên khoa
+    const department = await db.Department.findByPk(department_id, {
+      include: [{ model: db.Doctor, as: "doctors" }],
+    });
+
+    if (!department) {
+      return res.status(404).json({ message: "Không tìm thấy chuyên khoa" });
+    }
+
+    const doctors = department.doctors;
+
+    if (doctors.length === 0) {
+      return res.status(404).json({ message: "Không có bác sĩ trong khoa" });
+    }
+
+    // Kiểm tra bác sĩ nào làm việc trong ngày đó (dựa trên bảng lịch trực của bác sĩ)
+    const availableDoctors = [];
+
+    for (const doctor of doctors) {
+      const exists = await db.Appointment.findOne({
+        where: {
+          doctor_id: doctor.id,
+          appointment_date: date,
+          status: { [db.Sequelize.Op.in]: ["pending", "confirmed"] },
+        },
+      });
+
+      // Nếu BÁC SĨ KHÔNG bị chiếm slot trong ngày này → cho vào danh sách
+      if (!exists) {
+        availableDoctors.push(doctor);
+      }
+    }
+
+    res.json(availableDoctors);
+  } catch (error) {
+    console.error("🔥 Lỗi getAvailableDoctorForDepartment:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -642,4 +690,5 @@ module.exports = {
   doctorUpdateStatus,
   updateAppointment,
   autoAssign,
+  getAvailableDoctorForDepartment,
 };

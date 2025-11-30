@@ -28,6 +28,11 @@ import StepProfileEdit from "../pages/BookingFlow/StepProfileEdit";
 import StepPayment from "../pages/BookingFlow/StepPayment";
 import StepPaymentResult from "../pages/BookingFlow/StepPaymentResult";
 import BookingFlowDepartmentPage from "../pages/BookingFlowDepartment/BookingFlowDepartmentPage";
+import StepDepartmentProfileEdit from "../pages/BookingFlowDepartment/StepDepartmentProfileEdit";
+import StepDepartmentProfileCreate from "../pages/BookingFlowDepartment/StepDepartmentProfileCreate";
+import StepDepartmentConfirm from "../pages/BookingFlowDepartment/StepDepartmentConfirm";
+import StepDepartmentPayment from "../pages/BookingFlowDepartment/StepDepartmentPayment";
+import StepSuccessDepartment from "../pages/BookingFlowDepartment/StepSuccessDepartment";
 
 // 👇 danh sách routes
 export const routes = [
@@ -63,15 +68,15 @@ export const routes = [
     ),
     isShowHeader: true,
   },
-  {
-    path: "/dat-lich/",
-    page: () => (
-      <RequireAuth>
-        <Bookingpage />
-      </RequireAuth>
-    ),
-    isShowHeader: true,
-  },
+  // {
+  //   path: "/dat-lich/",
+  //   page: () => (
+  //     <RequireAuth>
+  //       <Bookingpage />
+  //     </RequireAuth>
+  //   ),
+  //   isShowHeader: true,
+  // },
   {
     path: "/departments",
     page: DepartmentsPage,
@@ -238,6 +243,49 @@ export const routes = [
         <BookingFlowDepartmentPage />
       </RequireAuth>
     ),
+    isShowHeader: true,
+  },
+  {
+    path: "/booking-department/create-profile",
+    page: () => (
+      <RequireAuth>
+        <StepDepartmentProfileCreate />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+
+  {
+    path: "/booking-department/edit-profile/:id",
+    page: () => (
+      <RequireAuth>
+        <StepDepartmentProfileEdit />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+
+  {
+    path: "/booking-department/confirm",
+    page: () => (
+      <RequireAuth>
+        <StepDepartmentConfirm />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+  {
+    path: "/booking-department/payment",
+    page: () => (
+      <RequireAuth>
+        <StepDepartmentPayment />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+  {
+    path: "/dat-lich-thanh-cong-khoa",
+    page: StepSuccessDepartment,
     isShowHeader: true,
   },
 ];
