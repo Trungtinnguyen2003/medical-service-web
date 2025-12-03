@@ -83,6 +83,40 @@ const DoctorScheduleManager = () => {
     loadAll();
   };
 
+  const loadDoctorScheduleToForm = (doctorId) => {
+  const doctorSchedules = schedules.filter(
+    (s) => String(s.doctor_id) === String(doctorId)
+  );
+
+  // Tập hợp unique thứ
+  const days = [
+    ...new Set(doctorSchedules.map((s) => String(s.day_of_week)))
+  ];
+
+  // Tập hợp unique buổi
+  const sessions = [
+    ...new Set(doctorSchedules.map((s) => s.session))
+  ];
+
+  // Tập hợp unique slots
+  const slots = [
+    ...new Set(
+      doctorSchedules.flatMap((s) =>
+        (s.timeSlots || []).map((t) => t.id)
+      )
+    ),
+  ];
+
+  // Gán ngược vào form
+  setForm({
+    doctor_id: doctorId,
+    days_of_week: days,
+    sessions: sessions,
+    selectedSlots: slots,
+  });
+};
+
+
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn chắc chắn muốn xóa lịch này?")) return;
     await doctorScheduleService.remove(id, token);
@@ -122,7 +156,7 @@ const DoctorScheduleManager = () => {
       }}
     >
       {/* HEADER */}
-      <h2 className="text-4xl font-extrabold text-purple-700 flex items-center gap-3 mb-6">
+      <h2 className="text-4xl font-extrabold text-purple-700 flex items-center gap-3 mb-6" style={{ marginTop: "20px" }}>
         <FaCalendarAlt className="text-purple-600" /> Quản lý lịch làm việc bác sĩ
       </h2>
 
@@ -145,7 +179,14 @@ const DoctorScheduleManager = () => {
           <label className="font-medium text-gray-700 mb-1 block">Bác sĩ</label>
           <select
             value={form.doctor_id}
-            onChange={(e) => setForm({ ...form, doctor_id: e.target.value })}
+            onChange={(e) => {
+  const id = e.target.value;
+  setForm({ ...form, doctor_id: id });
+
+  // nếu đã load xong data thì auto tick lịch
+  loadDoctorScheduleToForm(id);
+}}
+
             className="border rounded-xl p-3 w-full"
           >
             <option value="">-- Chọn bác sĩ --</option>

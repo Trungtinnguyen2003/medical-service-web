@@ -102,7 +102,8 @@ const Navbar = () => {
           <FaUserCircle size={28} />
           {isLoggedIn && showDropdown && (
             <DropdownMenu>
-              <DropdownItem to="/profile">Thông tin người dùng</DropdownItem>
+              <DropdownItem to="/phieu-kham-benh">Thông tin hồ sơ</DropdownItem>
+              <DropdownItem to="/profile">Thông tin tài khoản</DropdownItem>
               <DropdownItem as="button" onClick={handleLogout}>
                 Đăng xuất
               </DropdownItem>

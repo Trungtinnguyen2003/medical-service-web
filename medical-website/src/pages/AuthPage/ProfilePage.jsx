@@ -1,11 +1,11 @@
-// src/pages/Profile/ProfilePage.jsx
 import React, { useState } from "react";
-import AuthPage from "./AuthPage";
-import AppointmentHistory from "./AppointmentHistory";
 import styled from "styled-components";
 
+import PatientProfilePage from "../PatientProfilePage/PatientProfilePage";
+import AppointmentHistoryPage from "../AppointmentHistoryPage/AppointmentHistoryPage";
+
 const Container = styled.div`
-  max-width: 960px;
+  max-width: 1100px;
   margin: 40px auto;
   padding: 24px;
 `;
@@ -18,10 +18,10 @@ const Tabs = styled.div`
 
 const TabButton = styled.button`
   padding: 10px 20px;
-  font-weight: bold;
-  border-radius: 6px;
+  font-weight: 600;
+  border-radius: 8px;
   border: none;
-  background: ${({ active }) => (active ? "#3b82f6" : "#e5e7eb")};
+  background: ${({ active }) => (active ? "#6366f1" : "#e5e7eb")};
   color: ${({ active }) => (active ? "#fff" : "#1f2937")};
   cursor: pointer;
 `;
@@ -31,22 +31,27 @@ const ProfilePage = () => {
 
   return (
     <Container>
-      <Tabs style={{ marginTop: "20px" }}>
-        <TabButton
+      <Tabs style={{ marginTop: "60px" }} >
+        {/* <TabButton
           active={activeTab === "profile"}
           onClick={() => setActiveTab("profile")}
         >
-          Thông tin cá nhân
-        </TabButton>
+          Hồ sơ bệnh nhân
+        </TabButton> */}
+
         <TabButton
           active={activeTab === "history"}
           onClick={() => setActiveTab("history")}
         >
-          Lịch sử đặt khám
+          Phiếu khám bệnh
         </TabButton>
       </Tabs>
 
-      {activeTab === "profile" ? <AuthPage /> : <AppointmentHistory />}
+      {activeTab === "profile" ? (
+        <PatientProfilePage />
+      ) : (
+        <AppointmentHistoryPage />
+      )}
     </Container>
   );
 };

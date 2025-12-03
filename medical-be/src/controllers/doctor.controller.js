@@ -87,23 +87,79 @@ const createDoctor = async (req, res) => {
 
 const updateDoctor = async (req, res) => {
   try {
-    const { departmentIds = [], serviceIds = [], ...doctorData } = req.body;
+    const doctorId = req.params.id;
+    const {
+      name,
+      email,
+      password,
+      avatar,
+      title,
+      degree,
+      phone,
+      position,
+      experience_years,
+      description,
+      work_history,
+      education_history,
+      extra_info,
+      clinic_room_id,
+      departmentIds = [],
+      serviceIds = [],
+    } = req.body;
 
-    const doctor = await doctorService.update(req.params.id, doctorData);
-    if (!doctor)
+    // ===== 1) Lấy doctor ====
+    const doctor = await db.Doctor.findByPk(doctorId);
+    if (!doctor) {
       return res.status(404).json({ message: "Không tìm thấy bác sĩ" });
+    }
 
+    // ===== 2) Lấy user của bác sĩ ====
+    const user = await db.User.findByPk(doctor.user_id);
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy tài khoản user" });
+    }
+
+    // ===== 3) Update bảng user (email + password) ====
+    const updateUserData = { email };
+
+    if (password && password.trim() !== "") {
+      updateUserData.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.update(updateUserData);
+
+    // ===== 4) Update bảng doctor ====
+    await doctor.update({
+      name,
+      avatar,
+      title,
+      degree,
+      phone,
+      position,
+      experience_years,
+      description,
+      work_history,
+      education_history,
+      extra_info,
+      clinic_room_id,
+    });
+
+    // ===== 5) Update chuyên khoa ====
     if (Array.isArray(departmentIds)) {
       await doctor.setDepartments(departmentIds);
     }
 
+    // ===== 6) Update dịch vụ ====
     if (Array.isArray(serviceIds)) {
       await doctor.setServices(serviceIds);
     }
 
-    res.json({ message: "Cập nhật bác sĩ thành công" });
+    return res.json({ message: "Cập nhật bác sĩ thành công!" });
   } catch (err) {
-    res.status(500).json({ message: "Lỗi cập nhật", error: err.message });
+    console.error("❌ Lỗi updateDoctor:", err);
+    return res
+      .status(500)
+      .json({ message: "Lỗi cập nhật", error: err.message });
   }
 };
 
@@ -184,26 +240,36 @@ const getDoctorByUserId = async (req, res) => {
 // controller: doctor.controller.js
 const getDoctorsByDepartment = async (req, res) => {
   try {
-    const department = await db.Department.findByPk(req.params.id);
-    if (!department)
-      return res.status(404).json({ message: "Không tìm thấy chuyên khoa" });
+    const departmentId = req.params.id;
 
-    const doctors = await department.getDoctors({
+    const department = await db.Department.findByPk(departmentId, {
       include: [
         {
-          model: db.User,
-          required: true, // 🔴 Bắt buộc phải join được user
-          where: { status: "approved" }, // 🔴 Chỉ lấy bác sĩ có user được duyệt
-          attributes: ["id", "email", "name", "status"],
+          model: db.Doctor,
+          as: "doctors",
+          include: [
+            {
+              model: db.Department,
+              as: "departments",
+              through: { attributes: [] },
+            },
+            {
+              model: db.User,
+              attributes: ["id", "email", "status", "name"],
+              where: { status: "approved" },
+            },
+          ],
         },
       ],
     });
 
-    res.json(doctors);
+    if (!department)
+      return res.status(404).json({ message: "Không tìm thấy chuyên khoa" });
+
+    return res.json(department.doctors);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Lỗi lấy danh sách bác sĩ", error: err.message });
+    console.error("Lỗi getDoctorsByDepartment:", err);
+    return res.status(500).json({ message: "Lỗi server" });
   }
 };
 
@@ -323,6 +389,7 @@ const createDoctorWithAccount = async (req, res) => {
       education_history,
       extra_info,
       slug,
+      avatar,
     } = req.body;
 
     // 1️⃣ Kiểm tra xác nhận mật khẩu
@@ -361,6 +428,7 @@ const createDoctorWithAccount = async (req, res) => {
       work_history,
       education_history,
       extra_info,
+      avatar,
       user_id: newUser.id,
     });
 

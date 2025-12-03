@@ -217,18 +217,20 @@ const DoctorProfileManager = () => {
         )}
       </div>
 
-      {editing ? (
+      {/* {editing ? (
         <div style={{ marginTop: 20 }}>
           <button onClick={handleSave}>💾 Lưu</button>
           <button onClick={() => setEditing(false)} style={{ marginLeft: 10 }}>
             Huỷ
           </button>
         </div>
-      ) : (
+      ) : 
+      (
         <button onClick={() => setEditing(true)} style={{ marginTop: 20 }}>
           ✏️ Chỉnh sửa thông tin
         </button>
-      )}
+      )
+      } */}
     </div>
   );
 };

@@ -60,7 +60,7 @@ const updateProfile = async (userId, data) => {
   const user = await User.findByPk(userId);
   if (!user) throw new Error("Không tìm thấy người dùng");
 
-  const fields = [
+  const updatableFields = [
     "name",
     "email",
     "phone",
@@ -69,11 +69,17 @@ const updateProfile = async (userId, data) => {
     "gender",
   ];
 
-  fields.forEach((field) => {
+  updatableFields.forEach((field) => {
     if (data[field] !== undefined) {
       user[field] = data[field];
     }
   });
+
+  // 👇 ĐỔI MẬT KHẨU (NẾU CÓ GỬI)
+  if (data.password && data.password.trim() !== "") {
+    const hashed = await bcrypt.hash(data.password, 10);
+    user.password = hashed;
+  }
 
   await user.save();
 

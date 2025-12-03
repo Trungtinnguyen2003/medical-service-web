@@ -7,18 +7,46 @@ const { Op } = require("sequelize");
 const getMyAppointments = async (req, res) => {
   try {
     const userId = req.user.id;
+
     const appointments = await db.Appointment.findAll({
-      where: { userId: req.user.id }, // hoặc user_id tuỳ cách đặt
+      where: { user_id: userId }, // ✔ đúng tên cột
       include: [
-        { model: db.Doctor, attributes: ["id", "name"] },
-        { model: db.Service, attributes: ["id", "title"] },
-        { model: db.ServicePackage, attributes: ["id", "name"] },
+        {
+          model: db.PatientProfile,
+          as: "patientProfile", // ✔ alias đúng model
+          attributes: [
+            "id",
+            "full_name",
+            "date_of_birth",
+            "gender",
+            "phone",
+            "address",
+            "relationship",
+            "job",
+          ],
+        },
+        {
+          model: db.Doctor,
+          as: "doctor",
+          attributes: ["id", "name"],
+        },
+        {
+          model: db.Service,
+          as: "service",
+          attributes: ["id", "title"],
+        },
+        {
+          model: db.ServicePackage,
+          as: "servicePackage",
+          attributes: ["id", "name"],
+        },
       ],
       order: [["appointment_date", "DESC"]],
     });
 
-    res.json(appointments); // ✅ Chỉ giữ lại 1 lần gọi
+    res.json(appointments);
   } catch (err) {
+    console.error(err);
     res
       .status(500)
       .json({ message: "Lỗi khi lấy lịch sử", error: err.message });

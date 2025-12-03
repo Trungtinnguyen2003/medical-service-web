@@ -102,6 +102,10 @@ const EditProfile = () => {
         gender: formData.gender,
       };
 
+      if (formData.password.trim() !== "") {
+  payload.password = formData.password;
+}
+
       await updateProfile(localStorage.getItem("userId"), payload);
 
       alert("Cập nhật hồ sơ thành công!");
@@ -118,8 +122,8 @@ const EditProfile = () => {
   };
 
   return (
-    <Container style={{ backgroundColor: "#f5f7fa", minHeight: "100vh", paddingTop: "40px" }}>
-      <Title>✍️ Chỉnh sửa thông tin cá nhân</Title>
+    <Container style={{ backgroundColor: "#f5f7fa", minHeight: "100vh",  marginTop: "100px" ,paddingTop: "40px" }}>
+      <Title >✍️ Chỉnh sửa thông tin cá nhân</Title>
 
       <Form onSubmit={handleSubmit}>
         <FormRow>

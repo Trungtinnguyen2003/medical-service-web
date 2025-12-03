@@ -148,10 +148,10 @@ const AdminPostApproval = () => {
   }, [tab]);
 
   return (
-    <Wrapper>
+    <Wrapper style={{ marginTop: "20px" }} >
       <h2>Quản lý Bài viết</h2>
-      <Tabs>
-        <TabButton active={tab === "pending"} onClick={() => setTab("pending")}>
+      <Tabs style={{ marginTop: "10px" }}>
+        <TabButton active={tab === "pending"} onClick={() => setTab("pending") }>
           Chờ duyệt
         </TabButton>
         <TabButton active={tab === "approved"} onClick={() => setTab("approved")}>

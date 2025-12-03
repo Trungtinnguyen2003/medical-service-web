@@ -11,7 +11,7 @@ import RegisterPage from "../pages/RegisterPage/RegisterPage";
 import Adminpage from "../pages/Adminpage/Adminpage";
 import DoctorTeamPage from "../pages/DoctorTeamPage/DoctorTeamPage";
 import DoctorDetailPage from "../pages/DoctorDetailPage/DoctorDetailPage";
-import ProfilePage from "../pages/AuthPage/ProfilePage";
+import AuthPage from "../pages/AuthPage/AuthPage";
 import Bookingpage from "../pages/Bookingpage/Bookingpage";
 import DoctorAppointmentList from "../pages/DoctorAppointmentList/DoctorAppointmentList";
 import CategoryBlog from "../pages/CategoryBlog/CategoryBlog";
@@ -33,6 +33,9 @@ import StepDepartmentProfileCreate from "../pages/BookingFlowDepartment/StepDepa
 import StepDepartmentConfirm from "../pages/BookingFlowDepartment/StepDepartmentConfirm";
 import StepDepartmentPayment from "../pages/BookingFlowDepartment/StepDepartmentPayment";
 import StepSuccessDepartment from "../pages/BookingFlowDepartment/StepSuccessDepartment";
+import AppointmentHistoryPage from "../pages/AppointmentHistoryPage/AppointmentHistoryPage";
+import PatientProfilePage from "../pages/PatientProfilePage/PatientProfilePage";
+// import EditProfile from "../pages/AuthPage/AuthPage";
 
 // 👇 danh sách routes
 export const routes = [
@@ -109,7 +112,7 @@ export const routes = [
   },
   {
     path: "/profile",
-    page: ProfilePage,
+    page: AuthPage,
     isShowHeader: true,
   },
   {
@@ -286,6 +289,24 @@ export const routes = [
   {
     path: "/dat-lich-thanh-cong-khoa",
     page: StepSuccessDepartment,
+    isShowHeader: true,
+  },
+  {
+    path: "/hoso-benh-nhan",
+    page: () => (
+      <RequireAuth>
+        <PatientProfilePage />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+  {
+    path: "/phieu-kham-benh",
+    page: () => (
+      <RequireAuth>
+        <AppointmentHistoryPage />
+      </RequireAuth>
+    ),
     isShowHeader: true,
   },
 ];

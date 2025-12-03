@@ -3,86 +3,123 @@ import clinicRoomService from "../../services/clinicRoomService";
 import doctorService from "../../services/doctorService";
 import departmentService from "../../services/departmentService";
 
-// ===================== STYLE TRONG 1 FILE =====================
-const styles = {
-  container: {
-    padding: "20px",
-    fontFamily: "Arial, sans-serif",
+// ===================== STYLE =====================
+const ui = {
+  page: {
+    padding: 32,
+    background: "#f5f7fb",
+    minHeight: "100vh",
+    fontFamily: "Inter, sans-serif"
+  },
+  card: {
+    background: "#fff",
+    padding: 24,
+    borderRadius: 16,
+    boxShadow: "0 10px 30px rgba(0,0,0,0.06)"
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    marginTop: "20px",
+    marginTop: 20,
+    background: "#fff",
+    borderRadius: 12,
+    overflow: "hidden",
+    boxShadow: "0 5px 25px rgba(0,0,0,0.05)"
   },
   th: {
-    background: "#f1f1f1",
-    padding: "10px",
-    border: "1px solid #ddd",
+    background: "#eef2ff",
+    padding: 14,
+    textAlign: "left",
+    fontWeight: 600,
+    color: "#1e293b",
+    borderBottom: "1px solid #e2e8f0"
   },
   td: {
-    padding: "10px",
-    border: "1px solid #ddd",
+    padding: 14,
+    borderBottom: "1px solid #f1f5f9",
+    fontSize: 14,
+    color: "#334155"
   },
-  button: {
-    padding: "6px 12px",
+  btnPrimary: {
+    background: "#2563eb",
+    color: "white",
+    padding: "8px 16px",
+    borderRadius: 10,
     border: "none",
-    borderRadius: "4px",
-    marginRight: "6px",
     cursor: "pointer",
+    fontWeight: 600
   },
-  addBtn: {
-    background: "#28a745",
+  btnEdit: {
+    background: "#0ea5e9",
     color: "white",
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "none",
+    cursor: "pointer",
+    marginRight: 8
   },
-  editBtn: {
-    background: "#ffc107",
-  },
-  deleteBtn: {
-    background: "#dc3545",
+  btnDelete: {
+    background: "#ef4444",
     color: "white",
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "none",
+    cursor: "pointer"
   },
   modalOverlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(0,0,0,0.5)",
+    background: "rgba(0,0,0,0.4)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 99
   },
-  modalContent: {
-    background: "white",
-    padding: "20px",
-    width: "450px",
-    borderRadius: "8px",
+  modal: {
+    background: "#fff",
+    padding: 28,
+    width: "480px",
+    borderRadius: 20,
+    boxShadow: "0 15px 40px rgba(0,0,0,0.1)"
   },
   input: {
     width: "100%",
-    padding: "10px",
-    marginBottom: "12px",
-    borderRadius: "6px",
-    border: "1px solid #ddd",
+    padding: "10px 14px",
+    marginBottom: 14,
+    borderRadius: 10,
+    border: "1px solid #d1d5db",
+    background: "#f8fafc"
   },
-  modalActions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "10px",
+  select: {
+    width: "100%",
+    padding: "10px 14px",
+    marginBottom: 14,
+    borderRadius: 10,
+    border: "1px solid #d1d5db",
+    background: "#f8fafc"
   },
   saveBtn: {
-    background: "#007bff",
+    background: "#16a34a",
     color: "white",
-    padding: "8px 16px",
+    padding: "10px 18px",
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer",
+    fontWeight: 600
   },
   cancelBtn: {
     background: "gray",
     color: "white",
-    padding: "8px 16px",
-  },
+    padding: "10px 18px",
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer"
+  }
 };
 
 // ===================== COMPONENT =====================
 const ClinicRoomManager = () => {
   const [rooms, setRooms] = useState([]);
-
   const [departments, setDepartments] = useState([]);
   const [doctorList, setDoctorList] = useState([]);
 
@@ -94,7 +131,7 @@ const ClinicRoomManager = () => {
     code: "",
     department_id: "",
     floor: "",
-    location: "",
+    location: ""
   });
 
   const [selectedDoctor, setSelectedDoctor] = useState("");
@@ -107,7 +144,6 @@ const ClinicRoomManager = () => {
 
   const loadRooms = async () => {
     const data = await clinicRoomService.getAll();
-      console.log("ROOM DATA:", data);   // ⚠️ Thêm dòng này
     setRooms(data);
   };
 
@@ -116,13 +152,15 @@ const ClinicRoomManager = () => {
     setDepartments(data);
   };
 
-  const loadDoctorsByDepartment = async (depId) => {
-    const data = await doctorService.getByDepartment(depId);
-
-    setDoctorList(data);
+  const loadDoctors = async (depId) => {
+    const allDoctors = await doctorService.getAllDoctors(); // API có thật
+    const filtered = allDoctors.filter((doc) =>
+      doc.departments?.some((d) => d.id == depId)
+    );
+    setDoctorList(filtered);
   };
 
-  // ===================== CRUD FORM =====================
+  // ===================== OPEN CREATE =====================
   const openCreate = () => {
     setEditingRoom(null);
     setForm({
@@ -130,70 +168,57 @@ const ClinicRoomManager = () => {
       code: "",
       department_id: "",
       floor: "",
-      location: "",
+      location: ""
     });
     setDoctorList([]);
     setSelectedDoctor("");
     setModalOpen(true);
   };
 
+  // ===================== OPEN EDIT =====================
   const openEdit = async (room) => {
-  setEditingRoom(room);
+    setEditingRoom(room);
 
-  setForm({
-    name: room.name,
-    code: room.code,
-    department_id: room.department_id,
-    floor: room.floor,
-    location: room.location,
-  });
+    setForm({
+      name: room.name,
+      code: room.code,
+      department_id: room.department_id,
+      floor: room.floor,
+      location: room.location
+    });
 
-  // 🔥 1. Load bác sĩ thuộc chuyên khoa
-  if (room.department_id) {
-    const data = await doctorService.getByDepartment(room.department_id);
-    setDoctorList(data);
-  } else {
-    setDoctorList([]);
-  }
+    if (room.department_id) {
+      await loadDoctors(room.department_id);
+    }
 
-  // 🔥 2. Set bác sĩ đang được gán vào phòng (nếu có)
-  if (room.clinicDoctors && room.clinicDoctors.length > 0) {
-    setSelectedDoctor(room.clinicDoctors[0].id);
-  } else {
-    setSelectedDoctor("");
-  }
+    if (room.clinicDoctors && room.clinicDoctors.length > 0) {
+      setSelectedDoctor(room.clinicDoctors[0].id);
+    } else {
+      setSelectedDoctor("");
+    }
 
-  setModalOpen(true);
-};
+    setModalOpen(true);
+  };
 
-
+  // ===================== ON CHANGE DEPARTMENT =====================
   const handleChangeDepartment = async (depId) => {
     setForm({ ...form, department_id: depId });
-    if (depId) {
-      const data = await doctorService.getByDepartment(depId);
-
-      setDoctorList(data);
-    } else {
-      setDoctorList([]);
-    }
+    if (depId) await loadDoctors(depId);
     setSelectedDoctor("");
   };
 
+  // ===================== SUBMIT =====================
   const submitForm = async () => {
-    let createdRoom = null;
+    let room = null;
 
-    if (editingRoom) {
-      createdRoom = await clinicRoomService.update(editingRoom.id, form);
-    } else {
-      createdRoom = await clinicRoomService.create(form);
-    }
+    room = editingRoom
+      ? await clinicRoomService.update(editingRoom.id, form)
+      : await clinicRoomService.create(form);
 
-    // Nếu chọn bác sĩ → gán phòng khám
+    const roomId = room?.room?.id || editingRoom?.id;
+
     if (selectedDoctor) {
-      await clinicRoomService.assignDoctor(
-        selectedDoctor,
-        createdRoom?.room?.id || editingRoom?.id
-      );
+      await clinicRoomService.assignDoctor(selectedDoctor, roomId);
     }
 
     setModalOpen(false);
@@ -207,53 +232,46 @@ const ClinicRoomManager = () => {
     loadRooms();
   };
 
-  // ===================== RENDER =====================
   return (
-    <div style={styles.container}>
-      <h2>Quản lý Phòng Khám</h2>
+    <div style={ui.page}>
+      <h2 style={{ marginBottom: 20 }}>🏥 Quản lý Phòng Khám</h2>
 
-      <button style={{ ...styles.button, ...styles.addBtn }} onClick={openCreate}>
+      <button style={ui.btnPrimary} onClick={openCreate}>
         + Thêm phòng khám
       </button>
 
-      <table style={styles.table}>
+      {/* ===================== TABLE ===================== */}
+      <table style={ui.table}>
         <thead>
           <tr>
-            <th style={styles.th}>ID</th>
-            <th style={styles.th}>Tên phòng</th>
-            <th style={styles.th}>Mã</th>
-            <th style={styles.th}>Chuyên khoa</th>
-            <th style={styles.th}>Tầng</th>
-            <th style={styles.th}>Bác sĩ</th>
-            <th style={styles.th}>Hành động</th>
+            <th style={ui.th}>ID</th>
+            <th style={ui.th}>Tên phòng</th>
+            <th style={ui.th}>Mã</th>
+            <th style={ui.th}>Chuyên khoa</th>
+            <th style={ui.th}>Tầng</th>
+            <th style={ui.th}>Bác sĩ</th>
+            <th style={ui.th}>Hành động</th>
           </tr>
         </thead>
 
         <tbody>
           {rooms.map((room) => (
             <tr key={room.id}>
-              <td style={styles.td}>{room.id}</td>
-              <td style={styles.td}>{room.name}</td>
-              <td style={styles.td}>{room.code}</td>
-              <td style={styles.td}>{room.clinicDepartment?.name || "-"}</td>
-              <td style={styles.td}>{room.floor}</td>
-              <td style={styles.td}>
+              <td style={ui.td}>{room.id}</td>
+              <td style={ui.td}>{room.name}</td>
+              <td style={ui.td}>{room.code}</td>
+              <td style={ui.td}>{room.clinicDepartment?.name || "-"}</td>
+              <td style={ui.td}>{room.floor}</td>
+              <td style={ui.td}>
                 {room.clinicDoctors?.length
                   ? room.clinicDoctors.map((d) => d.name).join(", ")
                   : "Chưa có"}
               </td>
-              <td style={styles.td}>
-                <button
-                  style={{ ...styles.button, ...styles.editBtn }}
-                  onClick={() => openEdit(room)}
-                >
+              <td style={ui.td}>
+                <button style={ui.btnEdit} onClick={() => openEdit(room)}>
                   Sửa
                 </button>
-
-                <button
-                  style={{ ...styles.button, ...styles.deleteBtn }}
-                  onClick={() => deleteRoom(room.id)}
-                >
+                <button style={ui.btnDelete} onClick={() => deleteRoom(room.id)}>
                   Xoá
                 </button>
               </td>
@@ -262,21 +280,23 @@ const ClinicRoomManager = () => {
         </tbody>
       </table>
 
-      {/* ===================== MODAL TẠO / SỬA ===================== */}
+      {/* ===================== MODAL ===================== */}
       {modalOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <h3>{editingRoom ? "Sửa phòng khám" : "Thêm phòng khám"}</h3>
+        <div style={ui.modalOverlay}>
+          <div style={ui.modal}>
+            <h3 style={{ marginBottom: 16 }}>
+              {editingRoom ? "Sửa phòng khám" : "Thêm phòng khám"}
+            </h3>
 
             <input
-              style={styles.input}
+              style={ui.input}
               placeholder="Tên phòng khám"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
 
             <input
-              style={styles.input}
+              style={ui.input}
               placeholder="Mã phòng (VD: P012)"
               value={form.code}
               onChange={(e) => setForm({ ...form, code: e.target.value })}
@@ -284,7 +304,7 @@ const ClinicRoomManager = () => {
 
             {/* Chọn chuyên khoa */}
             <select
-              style={styles.input}
+              style={ui.select}
               value={form.department_id}
               onChange={(e) => handleChangeDepartment(e.target.value)}
             >
@@ -298,9 +318,9 @@ const ClinicRoomManager = () => {
 
             {/* Chọn bác sĩ */}
             <select
-              style={styles.input}
-              value={selectedDoctor}
+              style={ui.select}
               disabled={doctorList.length === 0}
+              value={selectedDoctor}
               onChange={(e) => setSelectedDoctor(e.target.value)}
             >
               <option value="">-- Chọn bác sĩ --</option>
@@ -312,24 +332,24 @@ const ClinicRoomManager = () => {
             </select>
 
             <input
-              style={styles.input}
+              style={ui.input}
               placeholder="Tầng"
               value={form.floor}
               onChange={(e) => setForm({ ...form, floor: e.target.value })}
             />
 
             <textarea
-              style={styles.input}
+              style={ui.input}
               placeholder="Ghi chú / vị trí phòng"
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
             />
 
-            <div style={styles.modalActions}>
-              <button style={styles.saveBtn} onClick={submitForm}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button style={ui.saveBtn} onClick={submitForm}>
                 Lưu
               </button>
-              <button style={styles.cancelBtn} onClick={() => setModalOpen(false)}>
+              <button style={ui.cancelBtn} onClick={() => setModalOpen(false)}>
                 Hủy
               </button>
             </div>

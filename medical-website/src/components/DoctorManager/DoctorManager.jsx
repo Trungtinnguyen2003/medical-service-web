@@ -3,18 +3,27 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import ClinicalExamModal from "../Doctor/ClinicalExamModal";
+import PrescriptionDetail from "../../components/PrescriptionDetail/PrescriptionDetail"; // ⭐ thêm dòng này
 
-
-const Content = styled.div`
+/* ========================= STYLE ========================= */
+const PageWrapper = styled.div`
   flex: 1;
-  padding: 25px;
-  background-color: #f8fafc;
+  padding: 32px;
+  background: #f4f7fb;
+`;
+
+const Card = styled.div`
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 `;
 
 const Title = styled.h2`
   font-size: 26px;
-  font-weight: bold;
-  margin-bottom: 20px;
+  font-weight: 700;
+  margin-bottom: 22px;
+  color: #1e293b;
 `;
 
 const Table = styled.table`
@@ -24,39 +33,83 @@ const Table = styled.table`
 `;
 
 const Th = styled.th`
-  background-color: #f3f4f6;
   padding: 12px;
-  text-align: left;
-  border-bottom: 2px solid #e5e7eb;
+  background: #eef2ff;
+  color: #312e81;
+  font-weight: 600;
+  border-bottom: 2px solid #c7d2fe;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 5;
 `;
 
 const Td = styled.td`
-  padding: 12px;
+  padding: 16px 14px;
   border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+`;
+
+const GroupTitle = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 10px 0 4px;
+`;
+
+const InfoItem = styled.div`
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 4px;
+
+  span {
+    color: #1e293b;
+    font-weight: 500;
+  }
 `;
 
 const Status = styled.span`
   padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: capitalize;
   color: white;
-  background-color: ${({ status }) =>
+  background: ${({ status }) =>
     status === "confirmed"
       ? "#10b981"
       : status === "pending"
       ? "#f59e0b"
       : status === "done"
-      ? "#3b82f6"
+      ? "#2563eb"
       : "#ef4444"};
-  text-transform: capitalize;
 `;
+
+const ActionButton = styled.button`
+  background: ${({ danger }) => (danger ? "#ef4444" : "#4f46e5")};
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-right: 6px;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const Empty = styled.div`
+  text-align: center;
+  padding: 24px;
+  color: #6b7280;
+`;
+
+/* ========================= COMPONENT ========================= */
 
 const DoctorManager = () => {
   const [appointments, setAppointments] = useState([]);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [selectedPrescription, setSelectedPrescription] = useState(null); // ⭐ để xem toa thuốc
+  const [selectedAppointment, setSelectedAppointment] = useState(null);   // ⭐ để khám
 
   const fetchAppointments = async () => {
     try {
@@ -64,6 +117,7 @@ const DoctorManager = () => {
       const res = await axios.get("http://localhost:5000/appointments/doctor", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setAppointments(res.data || []);
     } catch (error) {
       console.error("Lỗi khi lấy lịch khám:", error);
@@ -82,138 +136,132 @@ const DoctorManager = () => {
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("✅ Cập nhật trạng thái thành công");
+      alert("Cập nhật trạng thái thành công");
       fetchAppointments();
     } catch (err) {
-      alert("❌ Lỗi khi cập nhật trạng thái");
+      alert("Lỗi khi cập nhật trạng thái");
       console.error(err);
     }
   };
 
   return (
-    <Content>
-      <Title style={{ marginTop: "40px" }}>Lịch hẹn của tôi</Title>
+    <PageWrapper>
+      <Title style={{ marginTop: "36px" }}>Lịch hẹn của tôi</Title>
 
-      <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 6px 18px rgba(0,0,0,0.06)" }}>
-        <div style={{ maxHeight: "70vh", overflow: "auto" }}>
+      <Card>
+        <div style={{ maxHeight: "72vh", overflow: "auto" }}>
           <Table>
             <thead>
               <tr>
-                <Th>Họ tên</Th>
-                {/* <Th>Email</Th> */}
-                <Th>Điện thoại</Th>
-                <Th>Giới tính</Th>
-                <Th>Ngày sinh</Th>
-                <Th>Địa chỉ</Th>
-                <Th>Ngày</Th>
+                <Th>Hồ sơ bệnh nhân</Th>
+                <Th>Ngày khám</Th>
                 <Th>Giờ</Th>
-                {/* <Th>Triệu chứng</Th> */}
                 <Th>Dịch vụ</Th>
-                {/* <Th>Gói</Th> */}
-                <Th>Trạng thái / Hành độngg</Th>
+                <Th>Đơn thuốc</Th>
+                <Th>Trạng thái / Hành động</Th>
               </tr>
             </thead>
+
             <tbody>
-  {appointments.map((a, i) => {
-    const p = a.patientProfile; // profile mới
+              {appointments.length === 0 ? (
+                <tr>
+                  <Td colSpan="6">
+                    <Empty>Không có lịch hẹn nào</Empty>
+                  </Td>
+                </tr>
+              ) : (
+                appointments.map((a, i) => {
+                  const p = a.patientProfile;
 
-    return (
-      <tr key={a.id} style={{ background: i % 2 ? "#fafafa" : "#ffffff" }}>
-        {/* HỌ TÊN */}
-        <Td style={{ fontWeight: 600, color: "#4f46e5" }}>
-          {p?.full_name || "--"}
-        </Td>
+                  return (
+                    <React.Fragment key={a.id}>
+                      <tr
+                        style={{ background: i % 2 ? "#fafafa" : "#ffffff" }}
+                      >
+                        {/* ===================== HỒ SƠ BỆNH NHÂN ====================== */}
+                        <Td>
+                          <GroupTitle>🧑 Thông tin cá nhân</GroupTitle>
+                          <InfoItem>Họ tên: <span>{p?.full_name || "--"}</span></InfoItem>
+                          <InfoItem>Giới tính: <span>{p?.gender || "--"}</span></InfoItem>
+                          <InfoItem>Ngày sinh: <span>{p?.date_of_birth || "--"}</span></InfoItem>
+                          <InfoItem>Quan hệ: <span>{p?.relationship || "--"}</span></InfoItem>
 
-        {/* EMAIL (không có email trong hồ sơ → để trống) */}
-        {/* <Td>{a.user?.email || "--"}</Td> */}
+                          <GroupTitle>📞 Liên hệ</GroupTitle>
+                          <InfoItem>SĐT: <span>{p?.phone || "--"}</span></InfoItem>
+                          <InfoItem>Địa chỉ: <span>{p?.address || "--"}</span></InfoItem>
 
-        {/* SĐT */}
-        <Td>{p?.phone || "--"}</Td>
+                          <GroupTitle>🪪 Giấy tờ</GroupTitle>
+                          <InfoItem>Loại: <span>{p?.id_type || "--"}</span></InfoItem>
+                          <InfoItem>Số: <span>{p?.id_number || "--"}</span></InfoItem>
+                          <InfoItem>Quốc tịch: <span>{p?.nationality || "--"}</span></InfoItem>
+                          <InfoItem>Dân tộc: <span>{p?.ethnicity || "--"}</span></InfoItem>
 
-        {/* GIỚI TÍNH */}
-        <Td>{p?.gender || "--"}</Td>
+                          <GroupTitle>📄 Khác</GroupTitle>
+                          <InfoItem>Nghề nghiệp: <span>{p?.job || "--"}</span></InfoItem>
 
-        {/* NGÀY SINH */}
-        <Td>{p?.date_of_birth || "--"}</Td>
+                          {a.symptoms && (
+                            <InfoItem>Triệu chứng: <span>{a.symptoms}</span></InfoItem>
+                          )}
+                        </Td>
 
-        {/* ĐỊA CHỈ */}
-        <Td>{p?.address || "--"}</Td>
+                        <Td>{a.appointment_date}</Td>
+                        <Td>{a.appointment_time}</Td>
+                        <Td>{a.bookedService?.title || "--"}</Td>
 
-        {/* NGÀY */}
-        <Td>{a.appointment_date}</Td>
+                        {/* ===================== ĐƠN THUỐC ====================== */}
+                        <Td>
+                          {a.status === "done" ? (
+                            <ActionButton
+                              onClick={() => setSelectedPrescription(a.id)}
+                            >
+                              Xem lại đơn
+                            </ActionButton>
+                          ) : (
+                            <span style={{ color: "#94a3b8", fontSize: 13 }}>
+                              Chưa kê đơn
+                            </span>
+                          )}
+                        </Td>
 
-        {/* GIỜ */}
-        <Td>{a.appointment_time}</Td>
+                        {/* ===================== ACTION ====================== */}
+                        <Td>
+                          {a.status === "confirmed" ? (
+                            <>
+                              <ActionButton
+                                onClick={() => setSelectedAppointment(a)}
+                              >
+                                🩺 Khám
+                              </ActionButton>
 
-        {/* TRIỆU CHỨNG */}
-        {/* <Td>{a.symptoms || "--"}</Td> */}
+                              <ActionButton
+                                danger
+                                onClick={() => updateStatus(a.id, "cancelled")}
+                              >
+                                Hủy
+                              </ActionButton>
+                            </>
+                          ) : (
+                            <Status status={a.status}>{a.status}</Status>
+                          )}
+                        </Td>
+                      </tr>
 
-        {/* DỊCH VỤ */}
-        <Td>{a.bookedService?.title || "--"}</Td>
-
-        {/* GÓI */}
-        {/* <Td>{a.servicePackage?.name || "--"}</Td> */}
-
-        {/* ACTION */}
-        <Td>
-          {a.status === "confirmed" ? (
-            <>
-              <button
-                onClick={() => setSelectedAppointment(a)}
-                style={{
-                  marginRight: 6,
-                  background: "#8b5cf6",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 8,
-                  padding: "6px 12px",
-                  cursor: "pointer",
-                }}
-              >
-                🩺 Khám
-              </button>
-
-              <button
-                onClick={() => updateStatus(a.id, "cancelled")}
-                style={{
-                  background: "#ef4444",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 8,
-                  padding: "6px 12px",
-                  cursor: "pointer",
-                }}
-              >
-                ❌ Hủy
-              </button>
-            </>
-          ) : (
-            <Status status={a.status}>{a.status}</Status>
-          )}
-        </Td>
-      </tr>
-    );
-  })}
-
-  {appointments.length === 0 && (
-    <tr>
-      <Td
-        colSpan="12"
-        style={{
-          textAlign: "center",
-          color: "#6b7280",
-          padding: 24,
-        }}
-      >
-        Chưa có lịch hẹn
-      </Td>
-    </tr>
-  )}
-</tbody>
-
+                      {/* ===================== HIỆN ĐƠN THUỐC BÊN DƯỚI ====================== */}
+                      {selectedPrescription === a.id && (
+                        <tr>
+                          <Td colSpan="6">
+                            <PrescriptionDetail appointmentId={a.id} />
+                          </Td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              )}
+            </tbody>
           </Table>
         </div>
-      </div>
+      </Card>
 
       {/* Modal Khám lâm sàng */}
       {selectedAppointment && (
@@ -226,7 +274,7 @@ const DoctorManager = () => {
           }}
         />
       )}
-    </Content>
+    </PageWrapper>
   );
 };
 
