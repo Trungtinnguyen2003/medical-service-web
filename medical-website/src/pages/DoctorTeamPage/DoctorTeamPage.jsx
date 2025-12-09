@@ -1,60 +1,83 @@
-// src/pages/DoctorTeamPage.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DoctorBanner from '../../components/DoctorPage/DoctorBanner';
-import doctorService from '../../services/doctorService';
-import departmentService from '../../services/departmentService';
+// ===============================================
+// DoctorTeamPage.jsx — Premium UI + Search on Top
+// ===============================================
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import DoctorBanner from "../../components/DoctorPage/DoctorBanner";
+import departmentService from "../../services/departmentService";
 
 import {
-  Container,
+  PageWrapper,
   Sidebar,
   SidebarTitle,
   DeptItem,
+  SearchBox,
   Content,
   DoctorGrid,
   DoctorCard,
   DoctorAvatar,
   DoctorInfo,
-  ButtonGroup,
-  Button,
   DoctorName,
-  DoctorSpecialty,
-} from './DoctorTeamPage.style';
+  DoctorMeta,
+  Button,
+} from "./DoctorTeamPage.style";
 
 const DoctorTeamPage = () => {
   const [departments, setDepartments] = useState([]);
   const [selectedDept, setSelectedDept] = useState(null);
   const [doctors, setDoctors] = useState([]);
+  const [search, setSearch] = useState("");
+
   const navigate = useNavigate();
 
+  // ================= LOAD DEPARTMENTS =================
   useEffect(() => {
     const fetchDepartments = async () => {
       const list = await departmentService.getAllDepartments();
       setDepartments(list);
-      if (list.length > 0) {
-        setSelectedDept(list[0].id);
-      }
+      if (list.length > 0) setSelectedDept(list[0].id);
     };
     fetchDepartments();
   }, []);
 
+  // ================= LOAD DOCTORS =================
   useEffect(() => {
     const fetchDoctors = async () => {
       if (!selectedDept) return;
+
       const res = await departmentService.getDoctorsByDepartment(selectedDept);
-const approvedDoctors = res.filter((doc) => doc.user && doc.user.status === "approved");
-setDoctors(approvedDoctors);
-    };    
+      const approved = res.filter(
+        (doc) => doc.user && doc.user.status === "approved"
+      );
+      setDoctors(approved);
+    };
+
     fetchDoctors();
   }, [selectedDept]);
-  
+
+  // ================= FILTERED LIST =================
+  const filteredDoctors = useMemo(() => {
+    return doctors.filter((doc) =>
+      doc.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [doctors, search]);
 
   return (
     <>
       <DoctorBanner />
-      <Container>
+
+      <PageWrapper>
+        {/* ------------------- SIDEBAR ------------------- */}
         <Sidebar>
+          {/* 🔎 Search Box placed ON TOP */}
+          <SearchBox
+            placeholder="🔍 Tìm kiếm bác sĩ..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
           <SidebarTitle>Chuyên khoa</SidebarTitle>
+
           {departments.map((dept) => (
             <DeptItem
               key={dept.id}
@@ -66,39 +89,49 @@ setDoctors(approvedDoctors);
           ))}
         </Sidebar>
 
+        {/* ------------------- CONTENT ------------------- */}
         <Content>
-          <h2>Bác sĩ thuộc {departments.find((d) => d.id === selectedDept)?.name}</h2>
+          <h2 style={{ marginBottom: 20 }}>
+            Bác sĩ thuộc khoa{" "}
+            <strong>
+              {departments.find((d) => d.id === selectedDept)?.name}
+            </strong>
+          </h2>
+
           <DoctorGrid>
-            {doctors.length > 0 ? (
-              doctors.map((doctor) => (
+            {filteredDoctors.length > 0 ? (
+              filteredDoctors.map((doctor) => (
                 <DoctorCard key={doctor.id}>
                   <DoctorAvatar
-  src={
-    doctor.avatar
-      ? `http://localhost:5000${doctor.avatar}`
-      : '/images/default-doctor.jpg'
-  }
-/>
+                  loading="lazy"
+                    src={
+                      doctor.avatar
+                        ? `http://localhost:5000${doctor.avatar}`
+                        : "/images/default-doctor.jpg"
+                    }
+                  />
 
                   <DoctorInfo>
                     <DoctorName>{doctor.name}</DoctorName>
-                    <DoctorSpecialty>Học hàm học vị: {doctor.degree}</DoctorSpecialty>
-                    <DoctorSpecialty>Kinh nghiệm: {doctor.experience_years} năm</DoctorSpecialty>
-                    <DoctorSpecialty>Chức vụ: {doctor.position}</DoctorSpecialty>
 
-                    <ButtonGroup>
-                      <Button onClick={() => navigate(`/doctors/${doctor.id}`)}>XEM CHI TIẾT</Button>
-                      
-                    </ButtonGroup>
+                    <DoctorMeta>Học vị: {doctor.degree || "—"}</DoctorMeta>
+                    <DoctorMeta>
+                      Kinh nghiệm: {doctor.experience_years} năm
+                    </DoctorMeta>
+                    <DoctorMeta>Chức vụ: {doctor.position || "—"}</DoctorMeta>
+
+                    <Button onClick={() => navigate(`/doctors/${doctor.id}`)}>
+                      XEM CHI TIẾT
+                    </Button>
                   </DoctorInfo>
                 </DoctorCard>
               ))
             ) : (
-              <p>Hiện chưa có bác sĩ trong chuyên khoa này.</p>
+              <p>Không tìm thấy bác sĩ phù hợp.</p>
             )}
           </DoctorGrid>
         </Content>
-      </Container>
+      </PageWrapper>
     </>
   );
 };

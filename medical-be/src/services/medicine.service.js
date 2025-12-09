@@ -1,6 +1,7 @@
 const db = require("../models");
 const Medicine = db.Medicine;
 
+
 const getAll = async () => {
   return await Medicine.findAll({ order: [["name", "ASC"]] });
 };

@@ -65,6 +65,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "doctor_id",
       as: "schedules",
     });
+    Doctor.hasMany(models.CclsResult, {
+      foreignKey: "doctor_id",
+      as: "cclsResults",
+    });
   };
 
   return Doctor;

@@ -101,7 +101,35 @@ const login = async (req, res) => {
 
 const profile = async (req, res) => {
   try {
-    const user = await authService.getProfile(req.user.id);
+    const user = await db.User.findByPk(req.user.id, {
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "role",
+        "avatar",
+        "phone",
+        "address",
+        "date_of_birth",
+        "gender",
+        "status",
+      ],
+      include: [
+        {
+          model: db.Doctor,
+          attributes: ["id", "name", "title", "degree", "position", "avatar"],
+          include: [
+            {
+              model: db.Department,
+              as: "departments",
+              attributes: ["id", "name", "slug"],
+              through: { attributes: [] },
+            },
+          ],
+        },
+      ],
+    });
+
     res.json(user);
   } catch (err) {
     res

@@ -29,7 +29,7 @@ const HomePage = () => {
       <MissionVisionSection />
       <ServicesSection />
       <div ref={bookingRef}>
-        <BookingTabs />
+        {/* <BookingTabs /> */}
       </div>
       <FAQSection />
       <DoctorListSection />

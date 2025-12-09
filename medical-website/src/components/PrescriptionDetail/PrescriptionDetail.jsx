@@ -8,6 +8,7 @@ const PrescriptionDetail = ({ appointmentId }) => {
 
   useEffect(() => {
     if (!appointmentId) return;
+
     axios
       .get(
         `http://localhost:5000/api/prescriptions/appointment/${appointmentId}`,
@@ -25,63 +26,115 @@ const PrescriptionDetail = ({ appointmentId }) => {
     );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 mt-5 shadow-sm transition-all duration-300 hover:shadow-md">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h4 className="text-xl font-bold text-purple-700 flex items-center gap-2">
-          <FaCapsules className="text-purple-500 text-lg" />
-          Toa thuốc #{prescription.id}
-        </h4>
-        <p className="text-gray-700 mt-2 sm:mt-0 flex items-center gap-2 text-[15px]">
-          <FaStethoscope className="text-blue-500" />
-          <span>
-            <strong>Chẩn đoán:</strong>{" "}
+    <div className="
+      mt-6 p-8 rounded-3xl
+      bg-white/90 backdrop-blur-2xl 
+      border border-slate-200 
+      shadow-[0_12px_40px_rgba(20,20,40,0.08)]
+      hover:shadow-[0_18px_55px_rgba(60,0,120,0.18)]
+      transition-all duration-300
+    ">
+
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+
+        {/* LEFT */}
+        <div className="flex items-center gap-4">
+          <div className="
+            p-4 rounded-2xl 
+            bg-gradient-to-br from-purple-100 to-purple-200 
+            shadow-inner
+          ">
+            <FaCapsules className="text-purple-700 text-3xl" />
+          </div>
+
+          <div>
+            <h4 className="text-2xl font-extrabold text-slate-800 tracking-tight">
+              Toa thuốc #{prescription.id}
+            </h4>
+            <p className="text-sm text-slate-500 mt-1">
+              Danh sách thuốc được bác sĩ kê trong buổi khám
+            </p>
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div className="
+          flex items-center gap-3 px-5 py-3 rounded-2xl 
+          bg-gradient-to-r from-blue-50 to-blue-100 
+          border border-blue-200 shadow-inner
+        ">
+          <FaStethoscope className="text-blue-700 text-xl" />
+          <span className="text-[15px] text-slate-700 leading-snug">
+            <strong className="font-semibold">Chẩn đoán:</strong>{" "}
             {prescription.note || "Không có ghi chú"}
           </span>
-        </p>
+        </div>
       </div>
 
-      {/* Bảng thuốc */}
-      <div className="overflow-x-auto rounded-lg border border-gray-100">
-        <table className="min-w-full border-collapse text-[15px] text-gray-700">
-          <thead className="bg-purple-100 text-gray-800">
-            <tr>
-              <th className="border-b p-4 text-left w-[30%]">Tên thuốc</th>
-              <th className="border-b p-4 text-center w-[8%]">Liều</th>
-              <th className="border-b p-4 text-center w-[8%]">SL</th>
-              <th className="border-b p-4 text-left w-[15%]">Cách dùng</th>
-              <th className="border-b p-4 text-left w-[20%]">Thời gian</th>
-              <th className="border-b p-4 text-left w-[19%]">Ghi chú</th>
+      {/* TABLE */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-inner">
+        <table className="min-w-full text-[15px] text-slate-700">
+          <thead>
+            <tr className="
+              bg-gradient-to-r from-slate-100 to-slate-50
+              text-slate-700 text-[14px]
+            ">
+              <th className="p-4 text-left font-semibold">Tên thuốc</th>
+              <th className="p-4 text-center font-semibold w-[8%]">SL</th>
+              <th className="p-4 text-left font-semibold w-[20%]">Cách dùng</th>
+              <th className="p-4 text-left font-semibold w-[18%]">Thời gian</th>
+              <th className="p-4 text-left font-semibold w-[25%]">Ghi chú</th>
             </tr>
           </thead>
+
           <tbody>
-            {prescription.items.map((it) => (
+            {prescription.items.map((it, idx) => (
               <tr
                 key={it.id}
-                className="even:bg-gray-50 hover:bg-purple-50 transition-colors"
+                className={`
+                  transition-all border-b border-slate-100
+                  ${idx % 2 === 0 ? "bg-slate-50/40" : "bg-white"}
+                  hover:bg-purple-50/40
+                `}
               >
-                <td className="p-4 border-b text-left font-medium whitespace-nowrap">
+                <td className="p-4 font-semibold text-slate-900 whitespace-nowrap">
                   {it.Medicine?.name}
                 </td>
-                <td className="p-4 border-b text-center">{it.dosage}</td>
-                <td className="p-4 border-b text-center">{it.quantity}</td>
-                <td className="p-4 border-b text-left whitespace-nowrap">
-                  {it.frequency}
+
+                <td className="p-4 text-center font-bold text-purple-700">
+                  {it.quantity}
                 </td>
-                <td className="p-4 border-b text-left whitespace-nowrap">
-                  {it.duration}
+
+                <td className="p-4 whitespace-nowrap">
+                  {it.frequency || "—"}
                 </td>
-                <td className="p-4 border-b text-left">{it.note}</td>
+
+                <td className="p-4 whitespace-nowrap">
+                  {it.duration || "—"}
+                </td>
+
+                <td className="p-4">{it.note || "—"}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Footer */}
-      <p className="text-xs text-gray-400 mt-4 italic">
-        👩‍⚕️ Vui lòng dùng thuốc theo đúng hướng dẫn của bác sĩ.
-      </p>
+      {/* FOOTER */}
+      <div className="
+        mt-6 p-4 rounded-2xl 
+        bg-gradient-to-r from-purple-50 to-purple-100 
+        border border-purple-200 shadow-inner
+        text-center
+      ">
+        <p className="text-xs text-slate-600 italic flex items-center justify-center gap-2">
+          <FaStethoscope className="text-purple-600" />
+          <span>
+            Vui lòng tuân thủ đúng hướng dẫn của bác sĩ để đảm bảo hiệu quả điều trị.
+          </span>
+        </p>
+      </div>
     </div>
   );
 };

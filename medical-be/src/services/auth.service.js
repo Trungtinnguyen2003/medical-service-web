@@ -60,6 +60,17 @@ const updateProfile = async (userId, data) => {
   const user = await User.findByPk(userId);
   if (!user) throw new Error("Không tìm thấy người dùng");
 
+  // 🟣 KIỂM TRA EMAIL TRÙNG NGƯỜI KHÁC
+  if (data.email && data.email !== user.email) {
+    const existed = await User.findOne({
+      where: { email: data.email },
+    });
+
+    if (existed) {
+      throw new Error("Email đã được sử dụng bởi tài khoản khác");
+    }
+  }
+
   const updatableFields = [
     "name",
     "email",
@@ -75,10 +86,9 @@ const updateProfile = async (userId, data) => {
     }
   });
 
-  // 👇 ĐỔI MẬT KHẨU (NẾU CÓ GỬI)
+  // 🟣 ĐỔI MẬT KHẨU
   if (data.password && data.password.trim() !== "") {
-    const hashed = await bcrypt.hash(data.password, 10);
-    user.password = hashed;
+    user.password = await bcrypt.hash(data.password, 10);
   }
 
   await user.save();

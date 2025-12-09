@@ -76,7 +76,7 @@ const DoctorPostForm = () => {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 20 }}>
-     <h2 style={{ marginTop: "50px" }}>🩺 Đăng bài viết mới</h2>
+     <h2 >🩺 Đăng bài viết mới</h2>
       <form onSubmit={handleSubmit}>
         <label>Tiêu đề:</label>
         <input

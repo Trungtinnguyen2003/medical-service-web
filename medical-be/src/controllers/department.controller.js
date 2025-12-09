@@ -1,8 +1,10 @@
 const departmentService = require("../services/department.service");
 const db = require("../models");
+const { Op } = require("sequelize");
 const Department = db.Department;
 const Service = db.Service;
 const Doctor = db.Doctor;
+const CLS_SLUG = "can-lam-sang";
 
 const getDoctorsOfDepartment = async (req, res) => {
   try {
@@ -109,6 +111,36 @@ const getServicesOfDepartment = async (req, res) => {
   }
 };
 
+const getClinicalServices = async (req, res) => {
+  try {
+    const dept = await Department.findOne({
+      where: {
+        name: {
+          [Op.like]: "%cận%", // ⭐ chỉ cần chứa từ “cận”
+        },
+      },
+      include: [
+        {
+          model: Service,
+          as: "services",
+          through: { attributes: [] },
+        },
+      ],
+    });
+
+    if (!dept) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy khoa cận lâm sàng" });
+    }
+
+    res.json(dept.services);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
 module.exports = {
   getAllDepartments,
   getDepartmentBySlug,
@@ -118,4 +150,5 @@ module.exports = {
   setServices,
   getDoctorsOfDepartment,
   getServicesOfDepartment,
+  getClinicalServices,
 };

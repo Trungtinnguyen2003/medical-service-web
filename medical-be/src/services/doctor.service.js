@@ -16,8 +16,22 @@ const getAll = async () => {
         through: { attributes: [] },
       },
       {
-        model: db.User, // thêm quan hệ với user
+        model: db.User,
+        as: "user",
         attributes: ["id", "email", "status", "name"],
+      },
+      {
+        model: db.DoctorSchedule,
+        as: "schedules", // ⭐ THÊM LỊCH
+        attributes: ["id", "day_of_week", "session", "is_active"],
+        include: [
+          {
+            model: db.TimeSlot,
+            as: "timeSlots", // ⭐ THÊM KHUNG GIỜ
+            attributes: ["id", "label", "period"],
+            through: { attributes: [] },
+          },
+        ],
       },
     ],
   });

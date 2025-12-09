@@ -1,206 +1,207 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import doctorService from "../../services/doctorService";
+
 import {
-  Container,
-  ProfileWrapper,
+  PageWrapper,
+  HeaderSection,
+  AvatarWrapper,
   Avatar,
-  Info,
-  Name,
-  Position,
-  Section,
+  InfoBox,
+  DoctorName,
+  DoctorMeta,
+  ActionButton,
+  GradientCard,
   SectionTitle,
-  SectionContent,
-  ServiceList,
+  SectionBody,
+  ServiceGroup,
   ServiceItem,
+  RelatedList,
+  RelatedDoctorCard,
 } from "./DoctorDetailPage.style";
-import FAQSection from "../../components/FAQSection/FAQSection";
+
+import { FiBriefcase, FiStar, FiLayers, FiBookmark } from "react-icons/fi";
 
 const DoctorDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [doctor, setDoctor] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [services, setServices] = useState([]);
-  const [relatedDoctors, setRelatedDoctors] = useState([]);
   const [servicesByDepartment, setServicesByDepartment] = useState({});
-  const [deptServices, setDeptServices] = useState([]);
+  const [relatedDoctors, setRelatedDoctors] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const doc = await doctorService.getDoctorById(id);
       const dept = await doctorService.getDoctorDepartments(id);
       const srv = await doctorService.getDoctorServices(id);
+
+      console.log("Doctor:", doc);
+      console.log("Departments:", dept);
+      console.log("Services:", srv);
+
       setDoctor(doc);
       setDepartments(dept);
       setServices(Array.isArray(srv) ? srv : []);
-  
-      // 🔄 Lấy dịch vụ từ chuyên khoa
-      if (dept.length > 0) {
+
+      // lấy dịch vụ theo chuyên khoa
+      if (dept && dept.length > 0) {
         const servicesByDept = {};
-      
         for (const d of dept) {
           const res = await fetch(`http://localhost:5000/api/departments/${d.id}/services`);
           const data = await res.json();
           servicesByDept[d.name] = data;
         }
-      
         setServicesByDepartment(servicesByDept);
-      
-        // Lấy bác sĩ cùng khoa
-        const res = await fetch(`http://localhost:5000/api/departments/${dept[0].id}/doctors`);
-        const data = await res.json();
-        const filtered = data.filter((d) => d.id !== doc.id);
-        setRelatedDoctors(filtered);
-      }      
+
+        // lấy bác sĩ cùng khoa
+        try {
+          const res = await fetch(`http://localhost:5000/api/departments/${dept[0].id}/doctors`);
+          const doctorsRaw = await res.json();
+
+          console.log("Related doctors API:", doctorsRaw);
+
+          const filtered = doctorsRaw.filter((d) => d.id !== doc.id);
+          setRelatedDoctors(filtered);
+        } catch (err) {
+          console.error("Lỗi lấy bác sĩ cùng khoa:", err);
+        }
+      }
     };
+
     fetchData();
   }, [id]);
 
-  if (!doctor) return <p>Đang tải thông tin bác sĩ...</p>;
+  if (!doctor) return <p style={{ marginTop: 100 }}>Đang tải thông tin...</p>;
 
   return (
-    <Container>
-      <ProfileWrapper style={{ marginTop: "100px" }}>
-        <Avatar
-          src={
-            doctor.avatar
-              ? `http://localhost:5000${doctor.avatar}`
-              : "/images/default-doctor.jpg"
-          }
-        />
-        <Info>
-          <Name>{doctor.name}</Name>
-          <Position>
-            {doctor.degree} | {doctor.position}
-          </Position>
-          <p>
-            <strong>Kinh nghiệm:</strong> {doctor.experience_years} năm
-          </p>
-        </Info>
-      </ProfileWrapper>
+    <PageWrapper>
+      {/* HEADER */}
+      <HeaderSection>
+        <AvatarWrapper>
+          <Avatar
+            src={
+              doctor.avatar
+                ? `http://localhost:5000${doctor.avatar}`
+                : "/images/default-doctor.jpg"
+            }
+          />
+        </AvatarWrapper>
 
-      <Section>
+        <InfoBox>
+          <DoctorName>{doctor.name}</DoctorName>
+          <DoctorMeta>
+            <FiBriefcase /> {doctor.position} • {doctor.degree}
+          </DoctorMeta>
+          <DoctorMeta>
+            <FiStar /> Kinh nghiệm: {doctor.experience_years} năm
+          </DoctorMeta>
+
+          <ActionButton onClick={() => navigate(`/dat-lich?doctorId=${id}`)}>
+            Đặt lịch khám
+          </ActionButton>
+        </InfoBox>
+      </HeaderSection>
+
+      {/* GIỚI THIỆU */}
+      <GradientCard>
         <SectionTitle>Giới thiệu</SectionTitle>
-        <SectionContent>
-          {doctor.description || "Chưa cập nhật."}
-        </SectionContent>
-      </Section>
+        <SectionBody>{doctor.description || "Chưa cập nhật."}</SectionBody>
+      </GradientCard>
 
-      <Section>
-        <SectionTitle>Chuyên khoa đang công tác</SectionTitle>
-        <SectionContent>
-          {departments.map((d) => d.name).join(", ") || "Chưa cập nhật"}
-        </SectionContent>
-      </Section>
+      {/* CHUYÊN KHOA */}
+      <GradientCard>
+        <SectionTitle>Chuyên khoa công tác</SectionTitle>
+        <SectionBody>
+          {departments.length > 0
+            ? departments.map((d) => d.name).join(", ")
+            : "Chưa cập nhật"}
+        </SectionBody>
+      </GradientCard>
 
-      <Section>
-  <SectionTitle>Dịch vụ bác sĩ đang đảm nhận</SectionTitle>
+      {/* DỊCH VỤ BÁC SĨ ĐẢM NHẬN */}
+      <GradientCard>
+        <SectionTitle>Dịch vụ bác sĩ đang đảm nhận</SectionTitle>
 
-  {departments.map((dept) => {
-    // ⚙️ Lọc dịch vụ mà department.id trùng với dept.id
-    const servicesInThisDept = services.filter(
-      (s) => s.department?.id === dept.id || s.assignedDepartment?.id === dept.id
-    );
+        {departments.map((dept) => {
+          const servicesInThisDept = services.filter(
+            (s) => s.department?.id === dept.id || s.assignedDepartment?.id === dept.id
+          );
 
-    if (servicesInThisDept.length === 0) return null;
+          if (servicesInThisDept.length === 0) return null;
 
-    return (
-      <div key={dept.id} style={{ marginBottom: 24 }}>
-        <h4 style={{ color: "#0a2d55" }}>🏥 {dept.name}</h4>
-        <ul style={{ paddingLeft: 20, marginTop: 8 }}>
-          {servicesInThisDept.map((s) => (
-            <li key={s.id} style={{ fontSize: 15 }}>
-              {s.title}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  })}
-</Section>
+          return (
+            <ServiceGroup key={dept.id}>
+              <h4>
+                <FiLayers /> {dept.name}
+              </h4>
 
+              {servicesInThisDept.map((s) => (
+                <ServiceItem key={s.id}>
+                  <FiBookmark size={14} /> {s.title}
+                </ServiceItem>
+              ))}
+            </ServiceGroup>
+          );
+        })}
+      </GradientCard>
 
+      {/* HỌC VẤN */}
+      <GradientCard>
+        <SectionTitle>Đào Tạo</SectionTitle>
+        <SectionBody>{doctor.education_history || "Chưa cập nhật."}</SectionBody>
+      </GradientCard>
 
-
-
-
-      <Section>
-        <SectionTitle>Học vấn</SectionTitle>
-        <SectionContent>
-          {doctor.education_history || "Chưa cập nhật."}
-        </SectionContent>
-      </Section>
-
-      <Section>
+      {/* LỊCH SỬ CÔNG TÁC */}
+      <GradientCard>
         <SectionTitle>Lịch sử công tác</SectionTitle>
-        <SectionContent>
-          {doctor.work_history || "Chưa cập nhật."}
-        </SectionContent>
-      </Section>
+        <SectionBody>{doctor.work_history || "Chưa cập nhật."}</SectionBody>
+      </GradientCard>
 
-      <Section>
-  <SectionTitle>Các bác sĩ cùng chuyên khoa</SectionTitle>
-  <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-  {relatedDoctors.map((d) => (
-  <div
-    key={d.id}
-    style={{
-      border: "1px solid #ddd",
-      borderRadius: 8,
-      padding: 16,
-      width: 220,
-    }}
-  >
-    <img
-      src={`http://localhost:5000${d.avatar}`}
-      alt={d.name}
-      style={{
-        width: "100%",
-        height: 240,
-        objectFit: "cover",
-        borderRadius: 8,
-      }}
-    />
-    <h4 style={{ margin: "10px 0 5px" }}>{d.name}</h4>
-    <p style={{ fontSize: 14 }}>{d.position}</p>
+      <GradientCard>
+        <SectionTitle>Thông tin thêm</SectionTitle>
+        <SectionBody>{doctor.extra_info || "Chưa cập nhật."}</SectionBody>
+      </GradientCard>
 
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-      <button
-        style={{
-          padding: "6px 12px",
-          background: "#0a2d55",
-          color: "#fff",
-          border: "none",
-          borderRadius: 4,
-          cursor: "pointer",
-        }}
-        onClick={() => (window.location.href = `/doctors/${d.id}`)}
-      >
-        Xem chi tiết
-      </button>
+      {/* BÁC SĨ CÙNG CHUYÊN KHOA */}
+      <GradientCard>
+        <SectionTitle>Các bác sĩ cùng chuyên khoa</SectionTitle>
 
-      <button
-        style={{
-          padding: "6px 12px",
-          background: "#28a745",
-          color: "#fff",
-          border: "none",
-          borderRadius: 4,
-          cursor: "pointer",
-        }}
-        onClick={() => (window.location.href = `/dat-lich?doctorId=${d.id}`)}
-      >
-        Đặt lịch khám
-      </button>
-    </div>
-  </div>
-  
-))}
-  </div>
-</Section>
+        <RelatedList>
+          {relatedDoctors.length === 0 && (
+            <p style={{ fontSize: 14, color: "#64748b" }}>
+              Không tìm thấy bác sĩ nào khác trong khoa này.
+            </p>
+          )}
 
+          {relatedDoctors.map((d) => (
+            <RelatedDoctorCard key={d.id}>
+              <img
+                src={`http://localhost:5000${d.avatar}`}
+                className="avatar"
+                alt={d.name}
+              />
 
-    </Container>
+              <h4>{d.name}</h4>
+              <p>{d.position}</p>
+
+              <button onClick={() => navigate(`/doctors/${d.id}`)}>
+                Xem chi tiết
+              </button>
+
+              <button
+                className="book"
+                onClick={() => navigate(`/dat-lich?doctorId=${d.id}`)}
+              >
+                Đặt lịch
+              </button>
+            </RelatedDoctorCard>
+          ))}
+        </RelatedList>
+      </GradientCard>
+    </PageWrapper>
   );
 };
 

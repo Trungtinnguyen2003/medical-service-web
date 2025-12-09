@@ -1,27 +1,53 @@
 import styled from "styled-components";
+import bannerImage from "../../assets/images/3.jpg";
 
-export const FullImage = styled.img`
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  display: block;
-`;
-
+/* ===========================
+   BANNER WRAPPER – GIỮ UI CŨ NHƯNG KHÔNG LAG
+=========================== */
 export const BannerWrapper = styled.section`
   width: 100%;
   height: 100vh;
-  position: relative; /* thêm dòng này */
+  position: relative;
   overflow: hidden;
+
+  /* Dùng background thay <img> để mượt */
+  background-image: url(${bannerImage});
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  will-change: transform;
 `;
 
+/* Không dùng nữa, giữ lại nếu component khác cần */
+export const FullImage = styled.img`
+  display: none; /* tránh <img> load gây lag */
+`;
+
+/* ===========================
+   OVERLAY CONTENT MẶC ĐỊNH
+=========================== */
 export const OverlayContent = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  z-index: 2;
+  z-index: 3;
   max-width: 90%;
+`;
+
+export const LeftOverlayContent = styled.div`
+  position: absolute;
+  top: 20%;
+  left: 8%;
+  text-align: left;
+  z-index: 3;
+
+  @media (max-width: 768px) {
+    left: 5%;
+    top: 16%;
+  }
 `;
 
 export const Title = styled.h1`
@@ -35,18 +61,7 @@ export const Title = styled.h1`
     font-size: 32px;
   }
 `;
-export const LeftOverlayContent = styled.div`
-  position: absolute;
-  top: 20%;
-  left: 8%;
-  text-align: left;
-  z-index: 2;
 
-  @media (max-width: 768px) {
-    left: 5%;
-    top: 16%;
-  }
-`;
 export const Description = styled.p`
   font-size: 18px;
   font-weight: 400;
@@ -61,6 +76,7 @@ export const Description = styled.p`
     max-width: 90%;
   }
 `;
+
 export const Button = styled.button`
   background-color: #a855f7;
   color: white;
@@ -78,6 +94,9 @@ export const Button = styled.button`
   }
 `;
 
+/* ===========================
+   DOCTOR CARD GIỮ NGUYÊN
+=========================== */
 export const FlexRow = styled.div`
   display: flex;
   align-items: flex-start;
@@ -86,6 +105,7 @@ export const FlexRow = styled.div`
   gap: 40px;
   flex-wrap: wrap;
 `;
+
 export const DoctorCard = styled.div`
   background: #ffffff;
   border-radius: 16px;
@@ -113,6 +133,9 @@ export const DoctorImage = styled.img`
   object-fit: cover;
 `;
 
+/* ===========================
+   BOTTOM QUOTE GIỮ NGUYÊN
+=========================== */
 export const BottomQuote = styled.div`
   position: absolute;
   bottom: 30px;
@@ -134,6 +157,10 @@ export const QuoteText = styled.p`
   font-style: italic;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 `;
+
+/* ===========================
+   WELCOME CARD GIỮ NGUYÊN
+=========================== */
 export const WelcomeSection = styled.div`
   position: absolute;
   bottom: 24px;
@@ -201,6 +228,7 @@ export const DoctorTitle = styled.p`
   color: #6b7280;
   margin: 0;
 `;
+
 export const SocialIcons = styled.div`
   display: flex;
   gap: 6px;

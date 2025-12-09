@@ -35,6 +35,7 @@ import StepDepartmentPayment from "../pages/BookingFlowDepartment/StepDepartment
 import StepSuccessDepartment from "../pages/BookingFlowDepartment/StepSuccessDepartment";
 import AppointmentHistoryPage from "../pages/AppointmentHistoryPage/AppointmentHistoryPage";
 import PatientProfilePage from "../pages/PatientProfilePage/PatientProfilePage";
+import ClinicalDoctorManager from "../pages/DoctorCLS/ClinicalDoctorManager";
 // import EditProfile from "../pages/AuthPage/AuthPage";
 
 // 👇 danh sách routes
@@ -305,6 +306,15 @@ export const routes = [
     page: () => (
       <RequireAuth>
         <AppointmentHistoryPage />
+      </RequireAuth>
+    ),
+    isShowHeader: true,
+  },
+  {
+    path: "/doctor-cls",
+    page: () => (
+      <RequireAuth>
+        <ClinicalDoctorManager />
       </RequireAuth>
     ),
     isShowHeader: true,

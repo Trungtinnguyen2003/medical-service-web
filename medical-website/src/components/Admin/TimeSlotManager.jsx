@@ -1,7 +1,165 @@
 import React, { useEffect, useState } from "react";
 import timeSlotService from "../../services/timeSlotService";
-import { FaClock, FaTrash, FaEdit, FaPlus, FaMagic } from "react-icons/fa";
+import { FaClock, FaTrash, FaEdit, FaPlus } from "react-icons/fa";
 
+// ================== STYLE — MINIMAL MEDICAL BLUE ==================
+const pageWrapper = {
+  padding: "28px 32px",
+  minHeight: "100vh",
+  background: "#f3f6f9", // nền xám xanh rất nhẹ
+  display: "flex",
+  justifyContent: "center",
+};
+
+const containerStyle = {
+  width: "100%",
+  maxWidth: "1150px",
+};
+
+// Header minimal
+const headerCardStyle = {
+  background: "#e6f2ff", // xanh nhạt nhẹ
+  borderRadius: 14,
+  padding: "18px 22px",
+  border: "1px solid #d4e4f4",
+  color: "#0b3c60",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+};
+
+const headerLeft = {
+  display: "flex",
+  alignItems: "center",
+  gap: 14,
+};
+
+const headerIcon = {
+  width: 44,
+  height: 44,
+  borderRadius: 12,
+  background: "#d8eafd",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 20,
+  color: "#0b4d78",
+};
+
+const autoBtnStyle = {
+  padding: "8px 14px",
+  borderRadius: 8,
+  background: "#e8eef5",
+  border: "1px solid #c7d3df",
+  color: "#0b3c60",
+  cursor: "pointer",
+  fontSize: 14,
+};
+
+// Grid layout
+const mainGrid = {
+  display: "grid",
+  gridTemplateColumns: "0.9fr 1.1fr",
+  gap: 18,
+  marginTop: 20,
+};
+
+// Card style minimal
+const card = {
+  background: "white",
+  borderRadius: 12,
+  padding: "18px 20px",
+  border: "1px solid #e3e8ee",
+};
+
+// Section title very simple
+const sectionTitle = {
+  fontSize: 17,
+  fontWeight: 700,
+  color: "#123a55",
+  marginBottom: 8,
+};
+
+// Form input
+const inputBase = {
+  width: "100%",
+  borderRadius: 8,
+  border: "1px solid #cfd8e3",
+  padding: "8px 10px",
+  fontSize: 14,
+  outline: "none",
+};
+
+// Button minimal
+const submitBtn = {
+  width: "100%",
+  borderRadius: 8,
+  padding: "10px 0",
+  border: "none",
+  cursor: "pointer",
+  background: "#0ea5e9",
+  color: "white",
+  fontWeight: 600,
+  fontSize: 14,
+};
+
+// Table minimal
+const tableWrapper = {
+  borderRadius: 12,
+  overflow: "hidden",
+  border: "1px solid #dfe7ef",
+};
+
+const tableHead = {
+  background: "#eef4fa",
+  color: "#1e3a5f",
+};
+
+const thCell = {
+  padding: "10px 12px",
+  fontSize: 13,
+  textAlign: "left",
+  borderBottom: "1px solid #e5e7eb",
+};
+
+const tdCell = {
+  padding: "10px 12px",
+  fontSize: 13,
+  borderBottom: "1px solid #eef2f6",
+  color: "#334155",
+};
+
+// Badge simple pastel
+const badgeMorning = {
+  background: "#e0f2ff",
+  color: "#075985",
+  padding: "3px 10px",
+  borderRadius: 999,
+  fontSize: 12,
+};
+
+const badgeAfternoon = {
+  background: "#e6f7ed",
+  color: "#166534",
+  padding: "3px 10px",
+  borderRadius: 999,
+  fontSize: 12,
+};
+
+const iconBtn = {
+  width: 30,
+  height: 30,
+  borderRadius: 6,
+  background: "#f1f5f9",
+  border: "1px solid #d7dee6",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  fontSize: 14,
+};
+
+// ================== COMPONENT ==================
 const TimeSlotManager = () => {
   const [slots, setSlots] = useState([]);
   const [form, setForm] = useState({
@@ -10,17 +168,19 @@ const TimeSlotManager = () => {
     period: "morning",
   });
   const [editingId, setEditingId] = useState(null);
+
   const token = localStorage.getItem("token");
 
   const loadData = async () => {
     const res = await timeSlotService.getAll();
-    setSlots(res.data);
+    setSlots(res.data || []);
   };
 
   useEffect(() => {
     loadData();
   }, []);
 
+  // Tạo khung giờ chuẩn
   const generateStandardSlots = async () => {
     const defaultSlots = [
       { start: "07:30", end: "08:30", period: "morning" },
@@ -33,10 +193,9 @@ const TimeSlotManager = () => {
     ];
 
     let created = 0;
-    for (const s of defaultSlots) {
+    for (let s of defaultSlots) {
       const label = `${s.start} - ${s.end}`;
-      const exists = slots.some((x) => x.label === label);
-      if (!exists) {
+      if (!slots.some((t) => t.label === label)) {
         await timeSlotService.create(
           { label, start_time: s.start, end_time: s.end, period: s.period },
           token
@@ -47,8 +206,8 @@ const TimeSlotManager = () => {
 
     alert(
       created > 0
-        ? `✅ Đã tạo ${created} khung giờ chuẩn`
-        : "Tất cả khung giờ đã tồn tại!"
+        ? `Đã thêm ${created} khung giờ chuẩn mới`
+        : "Tất cả khung giờ chuẩn đã tồn tại"
     );
     loadData();
   };
@@ -57,7 +216,7 @@ const TimeSlotManager = () => {
     e.preventDefault();
 
     if (!form.start_time || !form.end_time) {
-      alert("Vui lòng nhập đầy đủ giờ bắt đầu và kết thúc!");
+      alert("Vui lòng nhập giờ bắt đầu và kết thúc.");
       return;
     }
 
@@ -75,13 +234,13 @@ const TimeSlotManager = () => {
     loadData();
   };
 
-  const handleEdit = (slot) => {
+  const handleEdit = (s) => {
     setForm({
-      start_time: slot.start_time,
-      end_time: slot.end_time,
-      period: slot.period,
+      start_time: s.start_time,
+      end_time: s.end_time,
+      period: s.period,
     });
-    setEditingId(slot.id);
+    setEditingId(s.id);
   };
 
   const handleDelete = async (id) => {
@@ -92,140 +251,163 @@ const TimeSlotManager = () => {
   };
 
   return (
-    <div className="p-8 bg-gradient-to-br from-white to-purple-50 min-h-screen rounded-xl shadow-md">
-      <div className="mb-6"  style={{ marginTop: "20px" }}>
-        <h2 className="text-3xl font-extrabold text-purple-700 flex items-center gap-3">
-          <FaClock className="text-purple-600" />
-          Quản lý Khung Giờ
-        </h2>
-        <p className="text-gray-500 mt-1">
-          Tạo, chỉnh sửa và quản lý khung giờ khám trong hệ thống.
-        </p>
-      </div>
-
-      {/* Nút tạo tự động */}
-      <button
-        onClick={generateStandardSlots}
-        className="mb-6 bg-green-600 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-green-700 shadow-sm transition"
-      >
-        <FaMagic />
-        Tạo khung giờ chuẩn
-      </button>
-
-      {/* FORM */}
-      <div className="bg-white p-6 rounded-xl shadow-md border border-purple-100 mb-8">
-        <h3 className="text-xl font-semibold text-purple-700 mb-4">
-          {editingId ? "Cập nhật khung giờ" : "Thêm khung giờ mới"}
-        </h3>
-
-        <form className="grid grid-cols-5 gap-4 items-end" onSubmit={handleSubmit}>
-          {/* Bắt đầu */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Giờ bắt đầu
-            </label>
-            <input
-              type="time"
-              className="border p-2 rounded-lg w-full mt-1 focus:ring-purple-500 focus:border-purple-500"
-              value={form.start_time}
-              onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-            />
+    <div style={pageWrapper}>
+      <div style={containerStyle}>
+        {/* HEADER */}
+        <div style={headerCardStyle}>
+          <div style={headerLeft}>
+            <div style={headerIcon}>
+              <FaClock />
+            </div>
+            <div>
+              <div style={{ fontSize: 19, fontWeight: 700 }}>
+                Quản lý Khung Giờ
+              </div>
+              <div style={{ fontSize: 13, opacity: 0.8 }}>
+                Tối ưu hóa lịch khám với các khung giờ phù hợp.
+              </div>
+            </div>
           </div>
 
-          {/* Kết thúc */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Giờ kết thúc
-            </label>
-            <input
-              type="time"
-              className="border p-2 rounded-lg w-full mt-1 focus:ring-purple-500 focus:border-purple-500"
-              value={form.end_time}
-              onChange={(e) => setForm({ ...form, end_time: e.target.value })}
-            />
-          </div>
+          {/* <button style={autoBtnStyle} onClick={generateStandardSlots}>
+            Tạo khung giờ chuẩn
+          </button> */}
+        </div>
 
-          {/* Buổi */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Buổi
-            </label>
-            <select
-              className="border p-2 rounded-lg w-full mt-1"
-              value={form.period}
-              onChange={(e) => setForm({ ...form, period: e.target.value })}
-            >
-              <option value="morning">Buổi sáng</option>
-              <option value="afternoon">Buổi chiều</option>
-            </select>
-          </div>
+        {/* GRID */}
+        <div style={mainGrid}>
+          {/* FORM */}
+          <div style={card}>
+            <div style={sectionTitle}>
+              {editingId ? "Cập nhật khung giờ" : "Thêm khung giờ mới"}
+            </div>
 
-          {/* Nút */}
-          <button
-            type="submit"
-            className="bg-purple-600 text-white py-3 rounded-lg col-span-2 hover:bg-purple-700 transition flex items-center justify-center gap-2 shadow"
-          >
-            <FaPlus />
-            {editingId ? "Lưu thay đổi" : "Thêm mới"}
-          </button>
-        </form>
-      </div>
+            <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
+              <div>
+                <label>Giờ bắt đầu</label>
+                <input
+                  type="time"
+                  style={inputBase}
+                  value={form.start_time}
+                  onChange={(e) =>
+                    setForm({ ...form, start_time: e.target.value })
+                  }
+                />
+              </div>
 
-      {/* TABLE */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-purple-100">
-        <table className="w-full table-auto">
-          <thead className="bg-purple-100 text-purple-700">
-            <tr>
-              <th className="p-3 text-left">ID</th>
-              <th className="p-3 text-left">Khung giờ</th>
-              <th className="p-3 text-left">Buổi</th>
-              <th className="p-3 text-left">Bắt đầu</th>
-              <th className="p-3 text-left">Kết thúc</th>
-              <th className="p-3 text-center">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {slots.length === 0 && (
-              <tr>
-                <td
-                  colSpan="6"
-                  className="text-center py-6 text-gray-500 text-sm"
+              <div>
+                <label>Giờ kết thúc</label>
+                <input
+                  type="time"
+                  style={inputBase}
+                  value={form.end_time}
+                  onChange={(e) =>
+                    setForm({ ...form, end_time: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label>Buổi khám</label>
+                <select
+                  style={inputBase}
+                  value={form.period}
+                  onChange={(e) =>
+                    setForm({ ...form, period: e.target.value })
+                  }
                 >
-                  Chưa có khung giờ nào
-                </td>
-              </tr>
-            )}
+                  <option value="morning">Buổi sáng</option>
+                  <option value="afternoon">Buổi chiều</option>
+                </select>
+              </div>
 
-            {slots.map((s) => (
-              <tr
-                key={s.id}
-                className="border-t hover:bg-purple-50 transition"
-              >
-                <td className="p-3">{s.id}</td>
-                <td className="p-3">{s.label}</td>
-                <td className="p-3">{s.period === "morning" ? "Sáng" : "Chiều"}</td>
-                <td className="p-3">{s.start_time}</td>
-                <td className="p-3">{s.end_time}</td>
-                <td className="p-3">
-                  <div className="flex items-center justify-center gap-4">
-                    <button
-                      className="text-blue-600 hover:text-blue-800"
-                      onClick={() => handleEdit(s)}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="text-red-600 hover:text-red-800"
-                      onClick={() => handleDelete(s.id)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              <div className="col-span-2">
+                <button 
+  style={{ ...submitBtn, marginTop: 10 }} 
+  type="submit"
+>
+                  <FaPlus /> {editingId ? "Lưu thay đổi" : "Thêm khung giờ"}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* TABLE */}
+          <div style={card}>
+            <div style={sectionTitle}>Danh sách khung giờ</div>
+
+            <div style={tableWrapper}>
+              <table className="w-full">
+                <thead style={tableHead}>
+                  <tr>
+                    <th style={thCell}>ID</th>
+                    <th style={thCell}>Khung giờ</th>
+                    <th style={thCell}>Buổi</th>
+                    <th style={thCell}>Bắt đầu</th>
+                    <th style={thCell}>Kết thúc</th>
+                    <th style={{ ...thCell, textAlign: "center" }}>
+                      Hành động
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {slots.map((s) => (
+                    <tr key={s.id} className="hover:bg-[#f7fbff]">
+                      <td style={tdCell}>{s.id}</td>
+                      <td style={tdCell}>{s.label}</td>
+                      <td style={tdCell}>
+                        <span
+                          style={
+                            s.period === "morning"
+                              ? badgeMorning
+                              : badgeAfternoon
+                          }
+                        >
+                          {s.period === "morning" ? "Buổi sáng" : "Buổi chiều"}
+                        </span>
+                      </td>
+                      <td style={tdCell}>{s.start_time}</td>
+                      <td style={tdCell}>{s.end_time}</td>
+
+                      <td style={{ ...tdCell, textAlign: "center" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            justifyContent: "center",
+                          }}
+                        >
+                          <button
+                            style={{ ...iconBtn, color: "#0ea5e9" }}
+                            onClick={() => handleEdit(s)}
+                          >
+                            <FaEdit />
+                          </button>
+
+                          <button
+                            style={{ ...iconBtn, color: "#dc2626" }}
+                            onClick={() => handleDelete(s.id)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {slots.length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ ...tdCell, textAlign: "center" }}>
+                        Chưa có khung giờ nào.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

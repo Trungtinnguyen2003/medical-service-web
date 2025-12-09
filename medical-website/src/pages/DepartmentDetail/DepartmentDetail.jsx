@@ -1,22 +1,22 @@
+import logo from "../../assets/images/logo.png";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import DepartmentDetailBanner from '../../components/DepartmentDetailBanner/DepartmentDetailBanner';
-import DepartmentOverview from '../../components/DepartmentOverview/DepartmentOverview';
+import DepartmentDetailBanner from "../../components/DepartmentDetailBanner/DepartmentDetailBanner";
+import DepartmentOverview from "../../components/DepartmentOverview/DepartmentOverview";
 import departmentService from "../../services/departmentService";
-import ServiceListByDepartment from '../../components/ServiceListByDepartment/ServiceListByDepartment';
-import AppointmentFormSidebar from "../../components/AppointmentFormSidebar/AppointmentFormSidebar";
+import ServiceListByDepartment from "../../components/ServiceListByDepartment/ServiceListByDepartment";
 import FAQSection from "../../components/FAQSection/FAQSection";
-import DoctorByDepartment from "../../components/Doctor/DoctorByDepartment"; // ✅
+import DoctorByDepartment from "../../components/Doctor/DoctorByDepartment";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
 };
 
 const slideInRight = {
-  hidden: { opacity: 0, x: 100 },
-  visible: { opacity: 1, x: 0, transition: { duration: 1 } }
+  hidden: { opacity: 0, x: 80 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.8 } },
 };
 
 const DepartmentDetail = () => {
@@ -30,9 +30,10 @@ const DepartmentDetail = () => {
         const data = await departmentService.getBySlug(slug);
         setDepartment(data);
 
-        // ✅ Gọi danh sách bác sĩ theo khoa
         if (data?.id) {
-          const doctorRes = await departmentService.getDoctorsByDepartment(data.id);
+          const doctorRes = await departmentService.getDoctorsByDepartment(
+            data.id
+          );
           setDoctors(doctorRes);
         }
       } catch (error) {
@@ -43,25 +44,34 @@ const DepartmentDetail = () => {
   }, [slug]);
 
   if (!department) {
-    return <div style={{ padding: "60px" }}>Đang tải thông tin chuyên khoa...</div>;
+    return (
+      <div style={{ padding: "60px" }}>Đang tải thông tin chuyên khoa...</div>
+    );
   }
 
   return (
     <>
       <DepartmentDetailBanner name={department.name} />
 
-      <div
-        style={{
-          display: 'flex',
-          gap: '40px',
-          alignItems: 'flex-start',
-          padding: '40px 60px',
-          flexWrap: 'wrap'
-        }}
-      >
-        {/* Bên trái */}
+      {/* WRAPPER 2 CỘT */}
+     <div
+  style={{
+    display: "flex",
+    gap: "40px",
+    alignItems: "flex-start",
+    padding: "40px 60px",
+    flexWrap: "wrap",
+
+    // 🔥 Quan trọng: ép mở rộng theo nội dung
+    height: "auto",
+    minHeight: "auto",
+    overflow: "visible",
+  }}
+>
+
+        {/* LEFT COLUMN */}
         <motion.div
-          style={{ flex: 1, minWidth: '300px' }}
+          style={{ flex: 1, minWidth: "320px" }}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
@@ -72,28 +82,29 @@ const DepartmentDetail = () => {
             image_url={department.image_url}
           />
 
+          {/* Ảnh chuyên khoa */}
           <motion.img
             src={`http://localhost:5000${department.image_url}`}
             alt={department.name}
             style={{
-              width: '80%',
-              marginTop: '20px',
-              marginLeft: '30px',
-              borderRadius: '8px'
+              width: "80%",
+              marginTop: "20px",
+              marginLeft: "30px",
+              borderRadius: "8px",
             }}
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1 }}
           />
 
-          {/* ✅ Danh sách dịch vụ */}
+          {/* Dịch vụ theo khoa */}
           {department.services?.length > 0 && (
             <motion.div initial="hidden" animate="visible" variants={fadeIn}>
               <ServiceListByDepartment services={department.services} />
             </motion.div>
           )}
 
-          {/* ✅ Danh sách bác sĩ theo khoa */}
+          {/* Bác sĩ theo khoa */}
           <motion.div
             initial="hidden"
             animate="visible"
@@ -104,27 +115,66 @@ const DepartmentDetail = () => {
           </motion.div>
         </motion.div>
 
-        {/* Bên phải: Form đặt hẹn */}
+        {/* RIGHT COLUMN — LOGO (KHÔNG STICKY, TỰ CUỘN THEO) */}
+                {/* RIGHT COLUMN — LOGO CUỘN THEO TRANG */}
         <motion.div
-          style={{
-            width: '360px',
-            minWidth: '280px',
-            position: 'sticky',
-            top: '80px',
-            alignSelf: 'flex-start',
-            boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-          }}
           initial="hidden"
           animate="visible"
           variants={slideInRight}
+          style={{
+            width: "280px",
+            minWidth: "240px",
+            borderRadius: "16px",
+            padding: "18px",
+            background: "#ffffff",
+            boxShadow: "0 8px 20px rgba(15,23,42,0.12)",
+
+            // 🔥 ÉP TRỞ VỀ PHẦN TỬ BÌNH THƯỜNG
+            position: "relative",
+            top: "unset",
+            left: "unset",
+            right: "unset",
+            bottom: "unset",
+            transform: "none",
+
+            // 🔥 KHÔNG TÁCH LỚP RIÊNG - BẮT BUỘC
+            willChange: "auto",
+
+            // 🔥 ĐẢM BẢO FLEX CONTAINER TÍNH ĐÚNG CHIỀU CAO
+            alignSelf: "flex-start",
+          }}
         >
-          <AppointmentFormSidebar />
+          <div
+            style={{
+              textAlign: "center",
+              marginBottom: "10px",
+              fontWeight: 600,
+              fontSize: "15px",
+              color: "#1f2937",
+            }}
+          >
+            Thương hiệu chuyên khoa
+          </div>
+
+          <img
+            src={logo}
+            alt="Department Logo"
+            style={{
+              width: "65%",
+              margin: "0 auto",
+              display: "block",
+              objectFit: "contain",
+              borderRadius: "12px",
+
+              // 🔥 LOGO cũng phải đảm bảo relative
+              position: "relative",
+            }}
+          />
         </motion.div>
+
       </div>
 
-      {/* Câu hỏi thường gặp */}
+      {/* FAQ */}
       <motion.div
         initial="hidden"
         whileInView="visible"

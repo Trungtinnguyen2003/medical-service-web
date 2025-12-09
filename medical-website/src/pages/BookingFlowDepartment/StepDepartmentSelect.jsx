@@ -62,8 +62,12 @@ const StepDepartmentSelect = ({ onNext }) => {
   useEffect(() => {
     injectKeyframes();
     departmentService.getAll().then((res) => {
-      setDepartments(res || []);
-    });
+  const filtered = (res || []).filter(
+    (d) => !d.name.toLowerCase().includes("cận")
+  );
+  setDepartments(filtered);
+});
+
   }, []);
 
   const handleSelect = (dept) => {

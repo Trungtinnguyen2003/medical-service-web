@@ -35,6 +35,7 @@ router.delete(
   departmentController.deleteDepartment
 );
 
+router.get("/clinical/services", controller.getClinicalServices);
 router.get("/:id/doctors", controller.getDoctorsOfDepartment);
 router.get("/:id/services", controller.getServicesOfDepartment);
 

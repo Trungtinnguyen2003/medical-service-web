@@ -26,6 +26,8 @@ db.PaymentTransaction = require("./payment_transaction")(sequelize, DataTypes);
 db.ChatSession = require("./chat_session.model")(sequelize, DataTypes);
 db.ChatMessage = require("./chat_message.model")(sequelize, DataTypes);
 db.Medicine = require("./medicine.model")(sequelize, DataTypes);
+db.CclsRequest = require("./ccls_request")(sequelize, DataTypes);
+db.CclsResult = require("./ccls_result")(sequelize, DataTypes); // nếu bạn có file result
 
 // ==================== THÊM TOA THUỐC ====================
 db.Prescription = require("./prescription.model")(sequelize, DataTypes);

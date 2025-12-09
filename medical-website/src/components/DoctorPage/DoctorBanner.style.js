@@ -9,11 +9,14 @@ export const BannerWrapper = styled.div`
   background-image: url(${bgImage});
   background-size: cover;
   background-position: center;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
+
+  will-change: transform;
 `;
 
 export const Overlay = styled.div`

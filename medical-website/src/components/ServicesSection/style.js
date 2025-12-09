@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const ServicesWrapper = styled.section`
   padding: 100px 20px;
-  background-color: rgb(243, 232, 253);
+  background-color: rgba(255, 255, 255, 1);
   display: flex;
   flex-wrap: wrap;
   gap: 40px;

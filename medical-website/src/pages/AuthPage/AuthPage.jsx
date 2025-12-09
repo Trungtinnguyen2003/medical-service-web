@@ -17,6 +17,8 @@ import {
 } from "./style";
 
 const EditProfile = () => {
+  const [userId, setUserId] = useState(null);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -26,8 +28,6 @@ const EditProfile = () => {
     date_of_birth: "",
     gender: "Nam",
     password: "",
-    city: "",
-    state: "",
   });
 
   const [avatarPreview, setAvatarPreview] = useState("");
@@ -38,20 +38,22 @@ const EditProfile = () => {
       try {
         const res = await getProfileByToken();
         const user = res.data;
+
         const [firstName, ...rest] = user.name.split(" ");
         const lastName = rest.join(" ");
 
+        setUserId(user.id); // 👈 LƯU ID
+        localStorage.setItem("userId", user.id); // 👈 ĐỂ FE CÁC CHỖ KHÁC DÙNG
+
         setFormData({
-          firstName: firstName || "",
-          lastName: lastName || "",
-          email: user.email || "",
+          firstName,
+          lastName,
+          email: user.email,
           phone: user.phone || "",
           address: user.address || "",
           date_of_birth: user.date_of_birth || "",
           gender: user.gender || "Nam",
           password: "",
-          city: "",
-          state: "",
         });
 
         const avatarUrl = user.avatar?.startsWith("http")
@@ -70,49 +72,81 @@ const EditProfile = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      if (avatarFile) {
-        const form = new FormData();
-        form.append("avatar", avatarFile);
-        const token = localStorage.getItem("token");
+  try {
+    // Upload avatar nếu có
+    if (avatarFile) {
+      const form = new FormData();
+      form.append("avatar", avatarFile);
+      const token = localStorage.getItem("token");
 
-        const res = await axios.post("http://localhost:5000/auth/profile/avatar", form, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+      const res = await axios.post("http://localhost:5000/auth/profile/avatar", form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-        const avatarUrl = res.data.avatar?.startsWith("http")
-          ? res.data.avatar
-          : `http://localhost:5000${res.data.avatar}`;
-        setAvatarPreview(avatarUrl);
-      }
-
-      const fullName = `${formData.firstName} ${formData.lastName}`;
-      const payload = {
-        name: fullName,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        date_of_birth: formData.date_of_birth,
-        gender: formData.gender,
-      };
-
-      if (formData.password.trim() !== "") {
-  payload.password = formData.password;
-}
-
-      await updateProfile(localStorage.getItem("userId"), payload);
-
-      alert("Cập nhật hồ sơ thành công!");
-    } catch (err) {
-      alert("Cập nhật thất bại: " + err.message);
+      const avatarUrl = res.data.avatar?.startsWith("http")
+        ? res.data.avatar
+        : `http://localhost:5000${res.data.avatar}`;
+      setAvatarPreview(avatarUrl);
     }
-  };
+
+    const fullName = `${formData.firstName} ${formData.lastName}`;
+
+    const payload = {
+      name: fullName,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      date_of_birth: formData.date_of_birth,
+      gender: formData.gender,
+    };
+
+    if (formData.password.trim() !== "") {
+      payload.password = formData.password;
+    }
+
+    await updateProfile(userId, payload);
+
+    // 🟣 Lấy lại profile mới sau update
+    const updated = await getProfileByToken();
+
+    // 🟣 Lưu localStorage mới
+    localStorage.setItem("user", JSON.stringify(updated.data));
+    localStorage.setItem("userId", updated.data.id);
+
+    // 🟣 Cập nhật UI (form hiển thị)
+    const [firstName, ...rest] = updated.data.name.split(" ");
+    setFormData({
+      firstName,
+      lastName: rest.join(" "),
+      email: updated.data.email,
+      phone: updated.data.phone || "",
+      address: updated.data.address || "",
+      date_of_birth: updated.data.date_of_birth || "",
+      gender: updated.data.gender || "Nam",
+      password: "",
+    });
+
+    // 🟣 Cập nhật avatar preview
+    if (updated.data.avatar) {
+      const avatarUrl = updated.data.avatar.startsWith("http")
+        ? updated.data.avatar
+        : `http://localhost:5000${updated.data.avatar}`;
+      setAvatarPreview(avatarUrl);
+    }
+
+    alert("Cập nhật hồ sơ thành công!");
+  } catch (err) {
+    console.error(err);
+    alert("Cập nhật thất bại: " + err.message);
+  }
+};
+
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -123,7 +157,7 @@ const EditProfile = () => {
 
   return (
     <Container style={{ backgroundColor: "#f5f7fa", minHeight: "100vh",  marginTop: "100px" ,paddingTop: "40px" }}>
-      <Title >✍️ Chỉnh sửa thông tin cá nhân</Title>
+      <Title>✍️ Chỉnh sửa thông tin cá nhân</Title>
 
       <Form onSubmit={handleSubmit}>
         <FormRow>

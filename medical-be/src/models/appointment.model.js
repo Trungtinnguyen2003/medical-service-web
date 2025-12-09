@@ -89,6 +89,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "payment_transaction_id",
       as: "paymentTransaction",
     });
+
+    Appointment.belongsTo(models.ClinicRoom, {
+      foreignKey: "clinic_room_id",
+      as: "clinic_room",
+    });
   };
 
   return Appointment;

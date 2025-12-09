@@ -29,19 +29,24 @@ const getDoctorById = async (req, res) => {
 
     const doctor = await db.Doctor.findByPk(id, {
       include: [
-        {
-          model: db.ClinicRoom,
-          as: "clinicRoom", // ← phòng khám
-        },
+        { model: db.ClinicRoom, as: "clinicRoom" },
         {
           model: db.Department,
-          as: "departments", // ← chuyên khoa
+          as: "departments",
           through: { attributes: [] },
         },
+        { model: db.Service, as: "services", through: { attributes: [] } },
         {
-          model: db.Service,
-          as: "services", // ← dịch vụ
-          through: { attributes: [] },
+          model: db.DoctorSchedule,
+          as: "schedules",
+          include: [
+            {
+              model: db.TimeSlot,
+              as: "timeSlots",
+              attributes: ["id", "label", "period"],
+              through: { attributes: [] },
+            },
+          ],
         },
       ],
     });
@@ -88,6 +93,7 @@ const createDoctor = async (req, res) => {
 const updateDoctor = async (req, res) => {
   try {
     const doctorId = req.params.id;
+
     const {
       name,
       email,
@@ -103,8 +109,10 @@ const updateDoctor = async (req, res) => {
       education_history,
       extra_info,
       clinic_room_id,
-      departmentIds = [],
-      serviceIds = [],
+
+      // ❗ Quan trọng: mặc định là undefined, KHÔNG phải [] nữa
+      departmentIds,
+      serviceIds,
     } = req.body;
 
     // ===== 1) Lấy doctor ====
@@ -113,22 +121,20 @@ const updateDoctor = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy bác sĩ" });
     }
 
-    // ===== 2) Lấy user của bác sĩ ====
+    // ===== 2) Lấy user ====
     const user = await db.User.findByPk(doctor.user_id);
     if (!user) {
       return res.status(404).json({ message: "Không tìm thấy tài khoản user" });
     }
 
-    // ===== 3) Update bảng user (email + password) ====
+    // ===== 3) Update bảng user =====
     const updateUserData = { email };
-
     if (password && password.trim() !== "") {
       updateUserData.password = await bcrypt.hash(password, 10);
     }
-
     await user.update(updateUserData);
 
-    // ===== 4) Update bảng doctor ====
+    // ===== 4) Update bảng doctor =====
     await doctor.update({
       name,
       avatar,
@@ -144,13 +150,13 @@ const updateDoctor = async (req, res) => {
       clinic_room_id,
     });
 
-    // ===== 5) Update chuyên khoa ====
-    if (Array.isArray(departmentIds)) {
+    // ===== 5) Update chuyên khoa (NHƯNG CHỈ NẾU CÓ GỬI) =====
+    if (departmentIds !== undefined) {
       await doctor.setDepartments(departmentIds);
     }
 
-    // ===== 6) Update dịch vụ ====
-    if (Array.isArray(serviceIds)) {
+    // ===== 6) Update dịch vụ (CHỈ NẾU CÓ GỬI) =====
+    if (serviceIds !== undefined) {
       await doctor.setServices(serviceIds);
     }
 

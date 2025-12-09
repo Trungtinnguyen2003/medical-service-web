@@ -4,6 +4,7 @@ import axios from "axios";
 import styled from "styled-components";
 import ClinicalExamModal from "../Doctor/ClinicalExamModal";
 import PrescriptionDetail from "../../components/PrescriptionDetail/PrescriptionDetail"; // ⭐ thêm dòng này
+import ClsResultDetail from "../Doctor/ClsResultDetail";
 
 /* ========================= STYLE ========================= */
 const PageWrapper = styled.div`
@@ -109,6 +110,8 @@ const Empty = styled.div`
 const DoctorManager = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedPrescription, setSelectedPrescription] = useState(null); // ⭐ để xem toa thuốc
+  const [selectedCls, setSelectedCls] = useState(null);
+
   const [selectedAppointment, setSelectedAppointment] = useState(null);   // ⭐ để khám
 
   const fetchAppointments = async () => {
@@ -146,7 +149,7 @@ const DoctorManager = () => {
 
   return (
     <PageWrapper>
-      <Title style={{ marginTop: "36px" }}>Lịch hẹn của tôi</Title>
+      <Title >Lịch hẹn của tôi</Title>
 
       <Card>
         <div style={{ maxHeight: "72vh", overflow: "auto" }}>
@@ -210,18 +213,23 @@ const DoctorManager = () => {
 
                         {/* ===================== ĐƠN THUỐC ====================== */}
                         <Td>
-                          {a.status === "done" ? (
-                            <ActionButton
-                              onClick={() => setSelectedPrescription(a.id)}
-                            >
-                              Xem lại đơn
-                            </ActionButton>
-                          ) : (
-                            <span style={{ color: "#94a3b8", fontSize: 13 }}>
-                              Chưa kê đơn
-                            </span>
-                          )}
-                        </Td>
+  {a.status === "done" ? (
+    <>
+      <ActionButton onClick={() => setSelectedPrescription(a.id)}>
+        Xem đơn thuốc
+      </ActionButton>
+
+      <ActionButton onClick={() => setSelectedCls(a.id)}>
+        Xem CLS
+      </ActionButton>
+    </>
+  ) : (
+    <span style={{ color: "#94a3b8", fontSize: 13 }}>
+      Chưa kê đơn
+    </span>
+  )}
+</Td>
+
 
                         {/* ===================== ACTION ====================== */}
                         <Td>
@@ -254,6 +262,13 @@ const DoctorManager = () => {
                           </Td>
                         </tr>
                       )}
+                      {selectedCls === a.id && (
+  <tr>
+    <Td colSpan="6">
+      <ClsResultDetail appointmentId={a.id} />
+    </Td>
+  </tr>
+)}
                     </React.Fragment>
                   );
                 })
@@ -274,6 +289,8 @@ const DoctorManager = () => {
           }}
         />
       )}
+
+      
     </PageWrapper>
   );
 };

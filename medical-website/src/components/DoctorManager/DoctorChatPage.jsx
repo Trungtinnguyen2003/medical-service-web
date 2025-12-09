@@ -211,7 +211,7 @@ const fetchChats = async () => {
     <div style={styles.container}>
       {/* Sidebar */}
       <div style={styles.sidebar}>
-        <h3 style={{ marginTop: "36px" }}>🩺 Ca tư vấn của tôi</h3>
+        <h3 >🩺 Ca tư vấn của tôi</h3>
         {sessions.length === 0 && <p>Không có ca nào.</p>}
 
         {sessions.map((s) => (

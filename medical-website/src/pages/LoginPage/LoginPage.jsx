@@ -11,19 +11,26 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
+ const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const res = await login(email, password);
       const token = res.data.token;
       localStorage.setItem("token", token);
-  
+
       const profile = await getProfileByToken();
       const { id, role, status } = profile.data;
-  
-      // Kiểm tra trạng thái tài khoản bác sĩ
+
+      // Lưu user
+      localStorage.setItem("user", JSON.stringify(profile.data));
+      localStorage.setItem("userId", id);
+      localStorage.setItem("userRole", role);
+
+      // ==========================
+      // 🔥 ROLE DOCTOR – xử lý TẬP TRUNG tại đây
+      // ==========================
       if (role === "doctor") {
+        // Check trạng thái duyệt
         if (status === "pending") {
           alert("Tài khoản bác sĩ đang chờ phê duyệt.");
           return;
@@ -32,28 +39,47 @@ const LoginPage = () => {
           alert("Tài khoản bác sĩ đã bị từ chối.");
           return;
         }
+
+        // Kiểm tra khoa CLS
+        const isCLSDoctor = profile.data?.doctor?.departments?.some(
+          (d) => d.name?.toLowerCase()?.includes("cận")
+        );
+
+        // Kết nối socket cho bác sĩ
+        socket.connect();
+        socket.emit("identify", { user_id: id, role: "doctor" });
+
+        // Điều hướng
+        if (isCLSDoctor) {
+          navigate("/doctor-cls");
+        } else {
+          navigate("/doctor/appointments");
+        }
+
+        return;
       }
-  
-      localStorage.setItem("userId", id);
-      localStorage.setItem("userRole", role);
-  
-      alert("Đăng nhập thành công");
-  
+
+      // ==========================
+      // Các role khác
+      // ==========================
+
       if (role === "admin") {
+        alert("Đăng nhập thành công");
         navigate("/admin");
-      } else if (role === "doctor") {
-        navigate("/doctor/appointments");
       }
-        else if (role === "consultant") {
-      socket.connect();
-  socket.emit("identify", { user_id: id, role: "consultant" });
-  navigate("/consultant/chat");
-      } else if (role === "user") {
-  socket.connect();
-  socket.emit("identify", { user_id: id, role: "user" });
-  navigate("/");
-}
-  
+
+      if (role === "consultant") {
+        socket.connect();
+        socket.emit("identify", { user_id: id, role: "consultant" });
+        navigate("/consultant/chat");
+      }
+
+      if (role === "user") {
+        socket.connect();
+        socket.emit("identify", { user_id: id, role: "user" });
+        navigate("/");
+      }
+
     } catch (err) {
       console.error("Đăng nhập thất bại", err);
       alert("Đăng nhập thất bại: " + (err.response?.data?.message || err.message));

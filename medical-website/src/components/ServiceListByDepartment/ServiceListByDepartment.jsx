@@ -42,11 +42,11 @@ const ServiceListByDepartment = ({ services }) => {
             {expandedId === service.id && (
   <div className="vertical-service-detail">
     {/* ✅ Hiển thị giá nếu có */}
-    {service.price && (
+    {/* {service.price && (
       <div style={{ marginBottom: 10, fontWeight: "bold", color: "#1e40af" }}>
         Giá dịch vụ: {service.price.toLocaleString("vi-VN")}₫
       </div>
-    )}
+    )} */}
 
     <ul className="vertical-service-detail-list">
       {(service.detail?.split(/\r?\n/) || []).map((line, idx) => (

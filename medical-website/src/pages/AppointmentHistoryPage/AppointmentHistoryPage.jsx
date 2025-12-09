@@ -4,6 +4,9 @@ import axios from "axios";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import PrescriptionDetail from "../../components/PrescriptionDetail/PrescriptionDetail";
+// import ClsResultDetailPatient from "../../components/Doctor/ClsResultDetailPatient";
+import ClsResultDetail from "../../components/Doctor/ClsResultDetail";
+
 
 // ============ LAYOUT CHUNG ============
 
@@ -716,12 +719,71 @@ const AppointmentHistoryPage = () => {
                       </tr>
 
                       {a.status === "done" && (
-                        <tr>
-                          <Td colSpan={6}>
-                            <PrescriptionDetail appointmentId={a.id} />
-                          </Td>
-                        </tr>
-                      )}
+  <tr>
+    <Td colSpan={6}>
+      <div
+        style={{
+          marginTop: "16px",
+          marginBottom: "24px",
+          padding: "20px 24px",
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "18px",
+            fontWeight: 700,
+            color: "#1e3a8a",
+            marginBottom: "12px",
+            borderBottom: "1px solid #e5e7eb",
+            paddingBottom: "6px",
+          }}
+        >
+          💊 Toa Thuốc & Chẩn đoán Tổng Quát
+        </h3>
+
+        <PrescriptionDetail appointmentId={a.id} />
+      </div>
+    </Td>
+  </tr>
+)}
+
+{a.status === "done" && (
+  <tr>
+    <Td colSpan={6}>
+      <div
+        style={{
+          marginTop: "-8px",
+          padding: "20px 24px",
+          background: "#ffffff",
+          borderRadius: "18px",
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "18px",
+            fontWeight: 700,
+            color: "#0369a1",
+            marginBottom: "12px",
+            borderBottom: "1px solid #e5e7eb",
+            paddingBottom: "6px",
+          }}
+        >
+          🧪 Thông Tin Tống Quát Cận Lâm Sàng
+        </h3>
+
+        <ClsResultDetail appointmentId={a.id} />
+      </div>
+    </Td>
+  </tr>
+)}
+
+
                     </React.Fragment>
                   ))}
                 </tbody>
